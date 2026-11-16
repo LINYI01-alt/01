@@ -1,4 +1,4 @@
-/* 邻伊 · 生育科普网站 全局样式 - 横版门户风格 */
+/* 邻伊 · 生育科普网站 - 横版门户风格 + 图文卡片 */
 :root {
   --gold: #c9a227;
   --gold-dark: #a67c00;
@@ -53,7 +53,7 @@ img {
   display: block;
 }
 
-/* Header & Nav - 更紧凑 */
+/* Header */
 .site-header {
   background: var(--warm-white);
   box-shadow: var(--shadow);
@@ -129,7 +129,6 @@ img {
   color: var(--gold-dark);
 }
 
-/* Dropdown */
 .dropdown {
   position: absolute;
   top: 100%;
@@ -165,7 +164,6 @@ img {
   color: var(--teal-dark);
 }
 
-/* Mobile menu toggle */
 .menu-toggle {
   display: none;
   background: none;
@@ -176,10 +174,10 @@ img {
   padding: 8px;
 }
 
-/* ========== Hero：更矮更宽的横版横幅 ========== */
+/* Hero - 横版矮横幅 */
 .hero {
   background: linear-gradient(135deg, #fdf8f0 0%, #f5ebe0 50%, #e8f0ee 100%);
-  padding: 36px 24px 42px;          /* 原来 60/80，现在压缩 */
+  padding: 36px 24px 42px;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -205,7 +203,6 @@ img {
   align-items: center;
 }
 
-/* 大屏：Hero 左右布局（Logo左 + 文字按钮右） */
 @media (min-width: 900px) {
   .hero-content {
     flex-direction: row;
@@ -218,19 +215,13 @@ img {
     margin: 0;
     flex-shrink: 0;
   }
-  .hero-content > div:not(.hero-logo),
-  .hero-content h1,
-  .hero-content .subtitle,
-  .hero-content .hero-btns {
-    /* 文字区域自然左对齐 */
-  }
   .hero-btns {
     justify-content: flex-start;
   }
 }
 
 .hero-logo {
-  width: 100px;                     /* 略缩小 */
+  width: 100px;
   height: 100px;
   margin: 0 auto 16px;
   border-radius: 50%;
@@ -293,11 +284,11 @@ img {
   color: #fff;
 }
 
-/* ========== Sections：上下间距缩小，更横向 ========== */
+/* Sections */
 .section {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 42px 24px;               /* 原来 60px，现在更扁 */
+  padding: 42px 24px;
 }
 
 .section-title {
@@ -328,10 +319,10 @@ img {
   font-size: 0.98rem;
 }
 
-/* ========== Cards：固定 3 列，更横向 ========== */
+/* Cards */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);   /* 大屏固定 3 列 */
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
@@ -388,6 +379,52 @@ img {
   color: #fff;
 }
 
+/* 带图卡片 */
+.card-with-img {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.card-with-img .card-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  display: block;
+  background: var(--soft-gray);
+}
+
+.card-with-img .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-with-img .card-body .card-link {
+  margin-top: auto;
+}
+
+/* 大屏横排图文入口 */
+@media (min-width: 1100px) {
+  .card-grid.horizontal-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .card-grid.horizontal-cards .card-with-img {
+    flex-direction: row;
+    align-items: stretch;
+  }
+  .card-grid.horizontal-cards .card-img {
+    width: 42%;
+    height: auto;
+    min-height: 180px;
+  }
+  .card-grid.horizontal-cards .card-body {
+    width: 58%;
+    padding: 20px 22px;
+  }
+}
+
 /* WeChat CTA */
 .wechat-cta {
   background: linear-gradient(135deg, var(--deep-green), #2a5a4e);
@@ -422,9 +459,9 @@ img {
   color: var(--text-light);
 }
 
-/* Article content */
+/* Article */
 .article-page {
-  max-width: 800px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 36px 20px 60px;
 }
@@ -460,7 +497,8 @@ img {
   margin-bottom: 14px;
 }
 
-.article-content ul, .article-content ol {
+.article-content ul,
+.article-content ol {
   margin: 0 0 18px 24px;
 }
 
@@ -478,7 +516,40 @@ img {
   color: var(--text-light);
 }
 
-/* FAQ accordion */
+/* 二级页左图右文 */
+.section-with-img {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 28px;
+  align-items: start;
+  margin-bottom: 48px;
+}
+
+.section-with-img .sec-img {
+  width: 100%;
+  border-radius: var(--radius);
+  object-fit: cover;
+  aspect-ratio: 4/3;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  background: var(--soft-gray);
+}
+
+.section-with-img .sec-content h1,
+.section-with-img .sec-content h2 {
+  margin-top: 0;
+}
+
+@media (max-width: 800px) {
+  .section-with-img {
+    grid-template-columns: 1fr;
+  }
+  .section-with-img .sec-img {
+    max-height: 220px;
+  }
+}
+
+/* FAQ */
 .faq-item {
   background: var(--warm-white);
   border: 1px solid var(--border);
@@ -568,10 +639,10 @@ img {
   color: #8aa39b;
 }
 
-/* Subpage hero small */
+/* Subpage hero */
 .page-hero {
   background: linear-gradient(135deg, #f5ebe0, #e8f0ee);
-  padding: 32px 24px;
+  padding: 28px 24px;
   text-align: center;
   border-bottom: 1px solid var(--border);
 }
@@ -586,7 +657,6 @@ img {
   color: var(--text-light);
 }
 
-/* Breadcrumb */
 .breadcrumb {
   max-width: 1280px;
   margin: 0 auto;
@@ -599,7 +669,7 @@ img {
   color: var(--teal-dark);
 }
 
-/* ========== 响应式 ========== */
+/* Responsive */
 @media (max-width: 1000px) {
   .card-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -650,7 +720,6 @@ img {
   .header-inner {
     flex-wrap: wrap;
   }
-  /* 中屏取消 Hero 左右布局，恢复居中 */
   .hero-content {
     flex-direction: column !important;
     text-align: center !important;
