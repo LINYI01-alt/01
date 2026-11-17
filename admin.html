@@ -85,6 +85,26 @@
           </table>
         </div>
       </div>
+
+      <section class="admin-card" id="aiArticleSection">
+        <h2>AI 科普文章管理</h2>
+        <p>输入主题生成草稿，编辑确认后手动发布。未发布内容仅管理员可见。</p>
+        <div class="admin-form" style="max-width:760px">
+          <label>文章主题<input id="aiArticleTopic" type="text" maxlength="300" placeholder="例如：AMH 检查是什么？"></label>
+          <button id="generateAiArticle" class="btn btn-primary" type="button">生成文章草稿</button>
+        </div>
+        <p id="aiArticleMessage" class="notice" role="status" aria-live="polite"></p>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>文章</th><th>操作</th></tr></thead><tbody id="aiArticleRows"></tbody></table></div>
+        <div id="aiArticleEditor" hidden style="margin-top:22px">
+          <h3>编辑文章</h3>
+          <div class="admin-form" style="max-width:900px">
+            <label>标题<input id="aiArticleTitle" maxlength="200"></label>
+            <label>摘要<textarea id="aiArticleSummary" rows="3"></textarea></label>
+            <label>正文<textarea id="aiArticleContent" rows="18"></textarea></label>
+            <div class="admin-toolbar"><button id="saveAiArticle" class="btn btn-outline" type="button">保存草稿</button><button id="publishAiArticle" class="btn btn-primary" type="button">手动发布</button></div>
+          </div>
+        </div>
+      </section>
     </section>
   </main>
 
