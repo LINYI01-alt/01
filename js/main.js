@@ -41,7 +41,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // 邻伊 AI 科普助手：所有页面统一加载
   (function initLinyiAI() {
-    if (!window.LINYI_SUPABASE_URL || !window.LINYI_SUPABASE_PUBLISHABLE_KEY) {\n      const script=document.createElement("script"); script.src=(location.pathname.includes("/pages/")?"../":"")+"js/supabase-config.js"; document.head.appendChild(script);\n      script.onload=initLinyiAI; return;\n    }\n    const cfg = window.LINYI_SUPABASE_URL && window.LINYI_SUPABASE_PUBLISHABLE_KEY;
+    if (!window.LINYI_SUPABASE_URL || !window.LINYI_SUPABASE_PUBLISHABLE_KEY) {
+      const script = document.createElement("script");
+      script.src = (location.pathname.includes("/pages/") ? "../" : "") + "js/supabase-config.js";
+      script.onload = initLinyiAI;
+      script.onerror = () => console.warn("邻伊 AI：Supabase 配置文件加载失败。");
+      document.head.appendChild(script);
+      return;
+    }\n    const cfg = window.LINYI_SUPABASE_URL && window.LINYI_SUPABASE_PUBLISHABLE_KEY;
     if (!cfg || document.getElementById("linyi-ai-launcher")) return;
     const style = document.createElement("style");
     style.textContent = `
