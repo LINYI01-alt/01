@@ -1,165 +1,95 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const loginPanel = document.getElementById("loginPanel");
-  const dashboard = document.getElementById("dashboard");
-  const loginForm = document.getElementById("adminLoginForm");
-  const loginMessage = document.getElementById("loginMessage");
-  const tableBody = document.getElementById("submissionRows");
-  const dashboardMessage = document.getElementById("dashboardMessage");
-  const userLabel = document.getElementById("adminUser");
-  const filter = document.getElementById("statusFilter");
-  let client;
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>内容管理 - 邻伊</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="images/logo.png" type="image/png">
+  <style>
+    .admin-wrap{max-width:1200px;margin:36px auto;padding:0 20px 60px}
+    .admin-card{background:var(--warm-white);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:26px;margin:20px 0}
+    .admin-card h1,.admin-card h2{color:var(--deep-green);margin-bottom:12px}
+    .admin-form{max-width:440px;display:grid;gap:14px}
+    .admin-form label,.submission-form label{display:grid;gap:6px;color:var(--deep-green);font-weight:600}
+    .admin-form input,.submission-form input,.submission-form select,.submission-form textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;background:#fff;font:inherit;color:var(--text)}
+    .admin-form button{justify-self:start}
+    .notice{margin:12px 0;color:var(--text-light);min-height:1.5em}
+    .notice.error{color:#a33232}.notice.success{color:#23734b}
+    .admin-toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:18px 0}
+    .admin-toolbar select{padding:9px;border:1px solid var(--border);border-radius:8px}
+    .admin-table-wrap{overflow-x:auto}
+    .admin-table{width:100%;border-collapse:collapse;min-width:850px}
+    .admin-table th,.admin-table td{padding:12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    .admin-table th{color:var(--deep-green);background:var(--soft-gray)}
+    .admin-table td small{display:block;color:var(--text-light);margin-top:6px}
+    .content-cell{max-width:360px;white-space:pre-wrap;overflow-wrap:anywhere}
+    .status{display:inline-block;padding:4px 9px;border-radius:20px;background:#eee;font-size:.85rem}
+    .status-pending{background:#fff2cf;color:#805e00}.status-approved{background:#dff3e6;color:#21633b}.status-rejected{background:#fbe4e4;color:#913232}
+    .row-actions{display:flex;gap:6px;flex-wrap:wrap}
+    .small-button{border:0;border-radius:6px;padding:7px 10px;cursor:pointer}
+    .approve{background:#dff3e6;color:#21633b}.reject{background:#fff2cf;color:#805e00}.delete{background:#fbe4e4;color:#913232}
+    .security-note{font-size:.92rem;color:var(--text-light);background:var(--soft-gray);padding:14px;border-radius:8px}
+    [hidden]{display:none!important}
+    @media(max-width:600px){.admin-card{padding:18px}.admin-wrap{margin-top:20px}}
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo-area">
+        <img src="images/logo.png" alt="邻伊 Logo">
+        <div class="logo-text">邻伊<span>内容管理</span></div>
+      </a>
+      <a href="index.html" class="btn btn-outline">返回网站</a>
+    </div>
+  </header>
 
-  const setMessage = (node, text, kind = "") => {
-    node.textContent = text || "";
-    node.className = kind ? `notice ${kind}` : "notice";
-  };
+  <main class="admin-wrap">
+    <section class="admin-card" id="loginPanel">
+      <h1>管理员登录</h1>
+      <p class="security-note">此页面地址不公开展示，但隐藏地址不等于安全措施。实际数据权限由 Supabase 登录身份和数据库 RLS 规则控制。</p>
+      <form id="adminLoginForm" class="admin-form">
+        <label>管理员邮箱
+          <input id="adminEmail" type="email" autocomplete="username" required>
+        </label>
+        <label>密码
+          <input id="adminPassword" type="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit" class="btn btn-primary">登录后台</button>
+      </form>
+      <p id="loginMessage" class="notice" role="status" aria-live="polite"></p>
+    </section>
 
-  const showDashboard = (user) => {
-    loginPanel.hidden = true;
-    dashboard.hidden = false;
-    userLabel.textContent = user?.email || "已登录管理员";
-  };
+    <section id="dashboard" hidden>
+      <div class="admin-card">
+        <h1>投稿审核</h1>
+        <p>当前登录：<strong id="adminUser"></strong></p>
+        <div class="admin-toolbar">
+          <label for="statusFilter">审核状态：</label>
+          <select id="statusFilter">
+            <option value="all">全部</option>
+            <option value="pending" selected>待审核</option>
+            <option value="approved">已通过</option>
+            <option value="rejected">已退回</option>
+          </select>
+          <button id="refreshSubmissions" class="btn btn-outline" type="button">刷新</button>
+          <button id="logoutButton" class="btn btn-outline" type="button">退出登录</button>
+        </div>
+        <p id="dashboardMessage" class="notice" role="status" aria-live="polite"></p>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>投稿信息</th><th>内容</th><th>联系方式</th><th>状态</th><th>操作</th></tr></thead>
+            <tbody id="submissionRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
 
-  const showLogin = () => {
-    dashboard.hidden = true;
-    loginPanel.hidden = false;
-  };
-
-  const escapeText = (value) => value == null ? "" : String(value);
-
-  async function loadSubmissions() {
-    tableBody.replaceChildren();
-    setMessage(dashboardMessage, "正在加载投稿…");
-    const selectedStatus = filter.value;
-    let query = client
-      .from("submissions")
-      .select("id,title,category,content,is_anonymous,author_name,contact,status,created_at")
-      .order("created_at", { ascending: false });
-
-    if (selectedStatus !== "all") query = query.eq("status", selectedStatus);
-
-    const { data, error } = await query;
-    if (error) {
-      setMessage(dashboardMessage, `读取失败：${error.message}`, "error");
-      return;
-    }
-    setMessage(dashboardMessage, `共加载 ${data.length} 条记录。`);
-    if (!data.length) {
-      const tr = document.createElement("tr");
-      const td = document.createElement("td");
-      td.colSpan = 6;
-      td.textContent = "当前筛选条件下没有投稿。";
-      tr.appendChild(td);
-      tableBody.appendChild(tr);
-      return;
-    }
-
-    for (const item of data) {
-      const tr = document.createElement("tr");
-      const titleCell = document.createElement("td");
-      const title = document.createElement("strong");
-      title.textContent = escapeText(item.title);
-      const meta = document.createElement("small");
-      meta.textContent = `${item.category || "未分类"} · ${item.is_anonymous ? "匿名" : (item.author_name || "未署名")} · ${new Date(item.created_at).toLocaleString("zh-CN")}`;
-      titleCell.append(title, meta);
-
-      const contentCell = document.createElement("td");
-      contentCell.textContent = escapeText(item.content);
-      contentCell.className = "content-cell";
-
-      const contactCell = document.createElement("td");
-      contactCell.textContent = item.contact ? escapeText(item.contact) : "—";
-
-      const statusCell = document.createElement("td");
-      const status = document.createElement("span");
-      status.className = `status status-${item.status}`;
-      status.textContent = item.status;
-      statusCell.appendChild(status);
-
-      const actionCell = document.createElement("td");
-      const actions = document.createElement("div");
-      actions.className = "row-actions";
-      for (const [label, statusValue, cssClass] of [
-        ["通过", "approved", "approve"],
-        ["退回", "rejected", "reject"]
-      ]) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = `small-button ${cssClass}`;
-        button.textContent = label;
-        button.addEventListener("click", () => updateStatus(item.id, statusValue));
-        actions.appendChild(button);
-      }
-      const del = document.createElement("button");
-      del.type = "button";
-      del.className = "small-button delete";
-      del.textContent = "删除";
-      del.addEventListener("click", () => deleteSubmission(item.id));
-      actions.appendChild(del);
-      actionCell.appendChild(actions);
-
-      tr.append(titleCell, contentCell, contactCell, statusCell, actionCell);
-      tableBody.appendChild(tr);
-    }
-  }
-
-  async function updateStatus(id, status) {
-    if (!confirm(status === "approved" ? "确认通过这条投稿？" : "确认将这条投稿退回？")) return;
-    setMessage(dashboardMessage, "正在保存…");
-    const { error } = await client.from("submissions").update({ status }).eq("id", id);
-    if (error) {
-      setMessage(dashboardMessage, `保存失败：${error.message}`, "error");
-      return;
-    }
-    await loadSubmissions();
-  }
-
-  async function deleteSubmission(id) {
-    if (!confirm("确定永久删除这条投稿吗？此操作不可撤销。")) return;
-    setMessage(dashboardMessage, "正在删除…");
-    const { error } = await client.from("submissions").delete().eq("id", id);
-    if (error) {
-      setMessage(dashboardMessage, `删除失败：${error.message}`, "error");
-      return;
-    }
-    await loadSubmissions();
-  }
-
-  try {
-    client = window.linyiCreateSupabaseClient();
-  } catch (error) {
-    setMessage(loginMessage, error.message, "error");
-    return;
-  }
-
-  loginForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    setMessage(loginMessage, "正在登录…");
-    const email = document.getElementById("adminEmail").value.trim();
-    const password = document.getElementById("adminPassword").value;
-    const { data, error } = await client.auth.signInWithPassword({ email, password });
-    if (error) {
-      setMessage(loginMessage, `登录失败：${error.message}`, "error");
-      return;
-    }
-    showDashboard(data.user);
-    await loadSubmissions();
-  });
-
-  document.getElementById("refreshSubmissions").addEventListener("click", loadSubmissions);
-  document.getElementById("logoutButton").addEventListener("click", async () => {
-    await client.auth.signOut();
-    showLogin();
-    setMessage(loginMessage, "已退出登录。", "success");
-  });
-  filter.addEventListener("change", loadSubmissions);
-
-  client.auth.getSession().then(async ({ data }) => {
-    if (data.session?.user) {
-      showDashboard(data.session.user);
-      await loadSubmissions();
-    } else {
-      showLogin();
-    }
-  });
-});
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase-config.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
