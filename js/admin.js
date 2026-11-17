@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showLogin();
     }
   });
-});
+
 
   // AI 科普文章草稿管理
   const articleBox = document.getElementById("aiArticleSection");
@@ -221,3 +221,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     loadAiArticles();
   }
+
+});
