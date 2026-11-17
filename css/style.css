@@ -749,76 +749,97 @@ img {
 }
 
 
-/* 首页双按钮握手：左右各自伸出一只手，在按钮之间自然相握 */
-.hero-btns.handshake-cta {
+
+/* 首页双入口按钮：简洁图标、清晰层级与柔和质感 */
+.hero-btns.hero-actions {
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 0;
-  flex-wrap: nowrap;
-  padding-top: 54px;
-  position: relative;
-  isolation: isolate;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
 }
-.handshake-btn {
-  position: relative;
-  width: 194px;
-  min-height: 52px;
-  justify-content: center;
-  overflow: visible;
+.hero-action {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 244px;
+  min-height: 76px;
+  padding: 12px 15px;
+  border: 1px solid rgba(26,60,52,.12);
+  border-radius: 14px;
+  background: rgba(255,254,249,.88);
+  color: var(--deep-green);
+  box-shadow: 0 5px 18px rgba(26,60,52,.07);
+  text-align: left;
+  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease, background .22s ease;
+}
+.hero-action:hover {
+  color: var(--deep-green);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(26,60,52,.12);
+  border-color: rgba(42,157,143,.42);
+  background: #fffefb;
+}
+.hero-action-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
   border-radius: 12px;
-  z-index: 1;
-  padding: 12px 14px;
+  background: #f3ead7;
+  color: #9b7628;
+}
+.hero-action-icon svg {
+  width: 23px;
+  height: 23px;
+}
+.hero-action--contact .hero-action-icon {
+  background: #e7f1ed;
+  color: #287969;
+}
+.hero-action-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.hero-action-copy strong {
+  color: var(--deep-green);
+  font-size: .96rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.hero-action-copy small {
+  color: var(--text-light);
+  font-size: .72rem;
+  line-height: 1.45;
   white-space: nowrap;
 }
-.handshake-btn > span {
-  position: relative;
-  z-index: 3;
+.hero-action-arrow {
+  color: #9aab9f;
+  font-size: 1.15rem;
+  line-height: 1;
+  transition: transform .22s ease, color .22s ease;
 }
-.handshake-btn--left {
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
+.hero-action:hover .hero-action-arrow {
+  color: var(--teal-dark);
+  transform: translateX(3px);
 }
-.handshake-btn--right {
-  border-top-left-radius: 4px;
-  border-bottom-left-radius: 4px;
+@media (max-width: 900px) {
+  .hero-btns.hero-actions { justify-content: center !important; }
 }
-.handshake-art {
-  position: absolute;
-  width: 190px;
-  height: 104px;
-  top: -57px;
-  pointer-events: none;
-  z-index: 2;
-  overflow: visible;
-}
-.handshake-art--left { left: 104px; }
-.handshake-art--right { right: 104px; }
-.handshake-btn--left:hover,
-.handshake-btn--right:hover {
-  z-index: 4;
-}
-@media (max-width: 520px) {
-  .hero-btns.handshake-cta {
-    padding-top: 48px;
+@media (max-width: 560px) {
+  .hero-btns.hero-actions {
     width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+    flex-direction: column;
+    gap: 10px;
   }
-  .handshake-btn {
-    width: min(46vw, 174px);
-    min-width: 0;
-    padding: 11px 7px;
-    font-size: .86rem;
+  .hero-action {
+    width: 100%;
+    min-height: 70px;
   }
-  .handshake-art {
-    width: 158px;
-    height: 88px;
-    top: -49px;
-  }
-  .handshake-art--left { left: 82px; }
-  .handshake-art--right { right: 82px; }
-}
-@media (max-width: 360px) {
-  .handshake-btn { font-size: .78rem; }
-  .handshake-art--left { left: 72px; }
-  .handshake-art--right { right: 72px; }
 }
