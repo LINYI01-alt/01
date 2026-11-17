@@ -176,6 +176,13 @@
       </div>
     </section>
 
+
+    <section id="ai-published-articles" style="margin:40px 0">
+      <h2>邻伊 AI 科普文章</h2>
+      <p>以下内容由编辑审核后发布，仅供科普参考。</p>
+      <div id="aiPublishedList" class="card-grid"></div>
+    </section>
+
     <div class="disclaimer" style="margin-top:40px;">
       再次提醒：以上均为科普介绍，不能替代面诊与个体化医疗建议。如有身体不适或计划相关检查/治疗，请及时就医。
     </div>
@@ -190,6 +197,29 @@
       <p>© 2025-2026 邻伊 · 内容仅供科普参考</p>
     </div>
   </footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-config.js"></script>
   <script src="../js/main.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", async function(){
+      const list=document.getElementById("aiPublishedList");
+      if(!list || !window.linyiCreateSupabaseClient) return;
+      try {
+        const client=window.linyiCreateSupabaseClient();
+        const {data,error}=await client.from("ai_article_drafts").select("id,title,summary,category,content,published_at").eq("status","published").order("published_at",{ascending:false});
+        if(error) throw error;
+        if(!data || !data.length){ list.innerHTML="<p>暂无新发布的 AI 科普文章。</p>"; return; }
+        data.forEach(function(article){
+          const card=document.createElement("article"); card.className="card";
+          const body=document.createElement("div"); body.className="card-body";
+          const title=document.createElement("h3"); title.textContent=article.title;
+          const summary=document.createElement("p"); summary.textContent=article.summary || article.content.slice(0,180);
+          const content=document.createElement("details"); const summaryEl=document.createElement("summary"); summaryEl.textContent="阅读全文";
+          const text=document.createElement("div"); text.className="article-content"; text.textContent=article.content;
+          content.append(summaryEl,text); body.append(title,summary,content); card.append(body); list.append(card);
+        });
+      } catch(e) { list.textContent="文章暂时无法加载，请稍后再试。"; }
+    });
+  </script>
 </body>
 </html>
