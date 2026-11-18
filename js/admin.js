@@ -25,6 +25,19 @@ document.addEventListener("DOMContentLoaded", () => {
     loginPanel.hidden = false;
   };
 
+  async function openAdminDashboard(user) {
+    const { data: isAdmin, error } = await client.rpc("is_admin");
+    if (error || isAdmin !== true) {
+      await client.auth.signOut();
+      showLogin();
+      setMessage(loginMessage, "此账号没有管理员权限，无法进入后台。", "error");
+      return false;
+    }
+    showDashboard(user);
+    await loadSubmissions();
+    return true;
+  }
+
   const escapeText = (value) => value == null ? "" : String(value);
 
   async function loadSubmissions() {
@@ -142,8 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setMessage(loginMessage, `登录失败：${error.message}`, "error");
       return;
     }
-    showDashboard(data.user);
-    await loadSubmissions();
+    await openAdminDashboard(data.user);
   });
 
   document.getElementById("refreshSubmissions").addEventListener("click", loadSubmissions);
@@ -156,8 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   client.auth.getSession().then(async ({ data }) => {
     if (data.session?.user) {
-      showDashboard(data.session.user);
-      await loadSubmissions();
+      await openAdminDashboard(data.session.user);
     } else {
       showLogin();
     }
