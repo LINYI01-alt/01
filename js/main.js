@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const panel = document.createElement("section");
   panel.id = "linyi-ai-panel";
   panel.setAttribute("aria-label", "邻伊 AI 科普助手");
-  panel.innerHTML = '<div id="linyi-ai-head"><strong>邻伊 AI 科普助手</strong><button type="button" aria-label="关闭">×</button></div><div id="linyi-ai-messages" aria-live="polite"><p class="bot">你好！可以问我生育基础、检查项目和辅助生殖相关的科普问题。</p></div><form id="linyi-ai-form"><input id="linyi-ai-input" maxlength="2000" placeholder="请输入你的问题…" required><button type="submit">发送</button></form><div id="linyi-ai-note">仅供科普参考，不构成诊断或治疗建议；请勿输入姓名、联系方式等隐私信息。</div>';
+  panel.innerHTML = '<div id="linyi-ai-head"><strong>邻伊 AI 科普助手</strong><button type="button" aria-label="关闭">×</button></div><div id="linyi-ai-messages" aria-live="polite"><p class="bot">你好！我可以帮助查找一般生育健康与辅助生殖知识。不能诊断、解读个人报告、提供用药或治疗建议。请勿输入任何个人或健康隐私信息。</p></div><form id="linyi-ai-form"><input id="linyi-ai-input" maxlength="2000" placeholder="请输入你的问题…" required><button type="submit">发送</button></form><div id="linyi-ai-note">仅限一般知识科普；不诊断、不解读个人报告、不提供用药或治疗建议。请勿输入姓名、手机号、身份证号、病历或检查报告。</div>';
 
   document.head.appendChild(style);
   document.body.append(launcher, panel);
@@ -103,6 +103,17 @@ document.addEventListener('DOMContentLoaded', function () {
     event.preventDefault();
     const question = input.value.trim();
     if (!question) return;
+
+    // 敏感个人信息和个体化诊疗请求不发送给 AI。
+    const hasPersonalId = /(?:1[3-9]\\d{9}|\\d{17}[0-9Xx])/i.test(question);
+    const clinicalRequest = /(我的(检查|报告|化验|B超|超声|AMH|病历)|报告(显示|提示|结果)|数值(偏高|偏低)|帮我(诊断|判断|看报告|制定方案)|该吃什么药|用药剂量|打多少(单位|针)|促排方案|成功率(多少|预测)|是否(能怀孕|适合试管)|症状.*怎么办)/i.test(question);
+    if (hasPersonalId || clinicalRequest) {
+      addMessage(hasPersonalId
+        ? "为保护隐私，请不要提交身份证号或手机号。此内容未发送。"
+        : "这个问题涉及个人检查结果或诊疗决策，我不能进行诊断、报告解读、用药指导或成功率预测。请向正规医疗机构的专业人员咨询。你可以改问一般概念，例如“AMH 是什么？”或“胚胎培养是什么意思？”。此内容未发送。", "bot");
+      input.value = "";
+      return;
+    }
 
     history.push({ role: "user", content: question });
     addMessage(question, "user");
