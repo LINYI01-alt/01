@@ -1089,3 +1089,34 @@ img {
 .communication-actions{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin:28px 0}
 @media(max-width:760px){.topic-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.communication-grid{grid-template-columns:1fr}.communication-card p{min-height:0}}
 @media(max-width:520px){.home-search-section{padding:45px 17px}.site-search-form,.faq-search-form>div{flex-direction:column}.site-search-form button,.faq-search-form button{width:100%}.topic-directory{padding:20px 16px}.topic-directory-grid{grid-template-columns:1fr}.faq-card{padding:17px}.communication-notice{padding:19px}}
+
+
+/* 首页搜索与入口卡片：统一间距、尺寸和对齐 */
+.home-search-section{padding:54px 22px 58px;background:#f7f6f1;border-top:1px solid #ebe8df;border-bottom:1px solid #ebe8df}
+.home-search-inner{max-width:1080px;margin:0 auto}
+.home-search-heading{text-align:center;margin-bottom:20px}
+.home-search-heading h2{margin:8px 0;color:#234638;font-size:clamp(23px,3vw,31px)}
+.home-search-heading p{margin:0;color:#68786f;font-size:14px;line-height:1.8}
+.site-search-form{display:flex;gap:10px;max-width:760px;margin:0 auto}
+.site-search-form input{min-width:0;flex:1;min-height:54px;padding:0 18px;border:1px solid #d6d9cf;border-radius:8px;background:#fff;color:#243d33;font:inherit;outline-offset:3px}
+.site-search-form button{min-width:112px;min-height:54px;padding:0 22px;border:0;border-radius:8px;background:#285341;color:#fff;font:600 15px Arial,'Noto Sans SC',sans-serif;cursor:pointer}
+.site-search-form button:hover{background:#1f4435}
+.search-help{margin:10px 0 0;text-align:center;color:#8a938c;font-size:12px}
+.site-search-results{max-width:760px;margin:14px auto 0}
+.site-search-results:empty{display:none}
+.site-search-result{display:block;padding:13px 16px;margin-top:8px;border:1px solid #e6e4dc;border-radius:8px;background:#fff;color:#29483e;text-decoration:none}
+.site-search-result strong{display:block;margin-bottom:4px}
+.site-search-result small{color:#77847b;line-height:1.6}
+.home-search-topics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:26px auto 0}
+.home-search-topics a{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:7px;min-width:0;min-height:116px;padding:17px 19px;border:1px solid #e5e2d9;border-radius:9px;background:#fff;color:#29483e;text-decoration:none;transition:border-color .2s ease,transform .2s ease,box-shadow .2s ease}
+.home-search-topics a:hover{transform:translateY(-2px);border-color:#b8c8ba;box-shadow:0 8px 20px rgba(35,65,48,.07)}
+.home-search-topics a span{color:#a58b59;font-size:10px;letter-spacing:.12em}
+.home-search-topics a strong{font-size:16px;line-height:1.4}
+.home-search-topics a small{color:#78857c;font-size:12px;line-height:1.5}
+.home-service-grid{grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;gap:16px}
+.home-service-card,.home-service-card:first-child{grid-column:auto;display:block;min-width:0;min-height:330px;height:100%;border-radius:10px}
+.home-service-content{left:20px;right:20px;bottom:21px}
+.home-service-content h3{font-size:21px}
+.home-service-content p{min-height:72px;font-size:12px}
+@media(max-width:900px){.home-search-topics{grid-template-columns:repeat(2,minmax(0,1fr))}.home-service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-service-card,.home-service-card:first-child{grid-column:auto;min-height:300px}}
+@media(max-width:560px){.home-search-section{padding:40px 16px}.site-search-form{flex-direction:column}.site-search-form button{width:100%}.home-search-topics{grid-template-columns:1fr;gap:9px}.home-search-topics a{min-height:90px;padding:15px 17px}.home-service-grid{grid-template-columns:1fr}.home-service-card,.home-service-card:first-child{min-height:265px}.home-service-content p{min-height:0}}
