@@ -1,183 +1,51 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>常见问题 - 邻伊</title>
-  <link rel="stylesheet" href="../css/style.css">
-  <link rel="icon" href="../images/logo.png" type="image/png">
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="邻伊常见问题：IVF基础、促排卵、取卵、胚胎培养、冻胚冻卵及辅助生殖伦理的科普问答。">
+  <meta name="robots" content="index,follow"><title>辅助生殖常见问题与科普问答 - 邻伊</title>
+  <link rel="stylesheet" href="../css/style.css"><link rel="icon" href="../images/logo.png" type="image/png">
 </head>
 <body>
-  <header class="site-header">
-    <div class="header-inner">
-      <a href="../index.html" class="logo-area">
-        <img src="../images/logo.png" alt="邻伊 Logo">
-        <div class="logo-text">邻伊<span>科学 · 温暖 · 陪伴</span></div>
-      </a>
-      <button class="menu-toggle" id="menuToggle">☰</button>
-      <ul class="main-nav" id="mainNav">
-        <li><a href="../index.html">首页</a></li>
-        <li><a href="kepu.html">科普知识</a></li>
-        <li><a href="zhuanti.html">专题解读</a></li>
-        <li><a href="faq.html" class="active">常见问题</a>
-          <div class="dropdown">
-            <a href="#jichu">基础认知类问题</a>
-            <a href="#jiancha">检查相关问题</a>
-            <a href="#liucheng">流程与时间问题</a>
-            <a href="#feiyong">费用与准备问题</a>
-            <a href="#xinli">心理与支持问题</a>
-            <a href="#qita">其他高频疑问</a>
-          </div>
-        </li>
-        <li><a href="jiaoliu.html">在线交流</a></li>
-        <li><a href="fenxiang.html">真实分享</a></li>
-        <li><a href="about.html">关于我们</a></li>
-      </ul>
-    </div>
-  </header>
-
-  <div class="page-hero">
-    <h1>常见问题</h1>
-    <p>高频疑问汇总，帮助快速找到方向</p>
-  </div>
+  <header class="site-header"><div class="header-inner">
+    <a href="../index.html" class="logo-area"><img src="../images/logo.png" alt="邻伊 Logo"><div class="logo-text">邻伊<span>科学 · 温暖 · 陪伴</span></div></a>
+    <button class="menu-toggle" id="menuToggle" aria-label="打开导航菜单">☰</button>
+    <ul class="main-nav" id="mainNav">
+      <li><a href="../index.html">首页</a></li><li><a href="kepu.html">科普知识</a></li><li><a href="zhuanti.html">专题解读</a></li>
+      <li><a href="faq.html" class="active">常见问题</a></li><li><a href="jiaoliu.html">在线交流</a></li><li><a href="fenxiang.html">真实分享</a></li><li><a href="about.html">关于我们</a></li>
+    </ul>
+  </div></header>
+  <div class="page-hero"><h1>常见问题</h1><p>每个问题独立整理，附摘要、延伸阅读与参考资料</p></div>
   <div class="breadcrumb"><a href="../index.html">首页</a> / 常见问题</div>
-
-  <div class="article-page">
-    <div class="disclaimer">
-      以下问答为通用科普性质，不能替代个体化医疗意见。具体请咨询医生。
-    </div>
-
-    <section id="jichu">
-      <h2 style="color:var(--deep-green);margin-bottom:20px;">基础认知类问题</h2>
-      <div class="faq-item">
-        <div class="faq-question">什么是辅助生殖？和自然受孕有什么区别？</div>
-        <div class="faq-answer">
-          辅助生殖是通过医学手段帮助精卵结合或胚胎着床的一类技术。自然受孕依赖双方身体条件在体内完成全过程；辅助手段则在评估后，针对薄弱环节给予帮助。是否需要、适合哪种，需医生判断。
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">备孕多久没成功就应该去检查？</div>
-        <div class="faq-answer">
-          一般建议：规律性生活未避孕满一年（女方≥35岁可考虑提前至半年）仍未孕，或已知有可能影响生育的疾病/手术史时，可到正规科室评估。具体因人而异。
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">男方也需要检查吗？</div>
-        <div class="faq-answer">
-          需要。生育是双方的事，精液分析等是基础且重要的检查，有助于全面了解情况，避免只查女方而延误。
-        </div>
-      </div>
+  <main class="article-page">
+    <div class="disclaimer"><strong>阅读提示：</strong>以下内容为一般健康知识科普，不构成诊断、治疗建议或个体化方案。检查结果、用药、治疗安排及风险判断，请向正规医疗机构的专业人员咨询。</div>
+    <form class="faq-search-form" id="faqSearchForm" role="search"><label for="faqSearchInput">搜索问题</label><div><input id="faqSearchInput" type="search" placeholder="例如：AMH、促排卵、取卵、冻胚"><button type="submit">查找</button></div><p id="faqSearchCount" aria-live="polite">可搜索下方全部问答</p></form>
+    <nav class="faq-category-nav" aria-label="问题分类"><a href="#jichu">基础知识</a><a href="#jiancha">检查知识</a><a href="#liucheng">流程与时间</a><a href="#dongluan">冷冻保存</a><a href="#fengxian">伦理与风险</a><a href="#pingtai">平台服务</a></nav>
+    <section id="jichu" class="faq-group"><h2>基础知识</h2>
+      <article class="faq-card" id="faq-ivf" data-search="IVF 试管婴儿 体外受精 胚胎移植 区别"><h3>什么是 IVF？它和试管婴儿是什么关系？</h3><p class="faq-summary">IVF 是体外受精的英文缩写，通常与胚胎移植技术共同构成常说的体外受精—胚胎移植。</p><details><summary>查看科普回答</summary><p>IVF 指卵子与精子在医疗机构实验室环境中完成受精。之后是否进行胚胎培养、冷冻或移植，由医疗团队根据医学情况和规范流程决定。它不是对所有生育问题都适用的通用方法，也不保证妊娠结果。</p><p class="faq-related">相关知识：<a href="kepu.html#ivf">IVF 基础知识</a> · <a href="kepu.html#peitai">胚胎培养与移植</a></p><p class="faq-source">参考资料：<a href="https://www.nhc.gov.cn/wjw/c100221/202201/e61040c5c38c4b4696cdb3ee68ee27e1.shtml" target="_blank" rel="noopener">国家卫健委《人类辅助生殖技术管理办法》</a></p></details></article>
+      <article class="faq-card" id="faq-art" data-search="辅助生殖 人工授精 IVF 技术类型"><h3>辅助生殖技术包括哪些类型？</h3><p class="faq-summary">常见概念包括人工授精、体外受精—胚胎移植及其衍生技术，具体技术有适用范围和管理要求。</p><details><summary>查看科普回答</summary><p>不同技术的操作环节、适用情境和管理规范不同。是否需要某项技术，必须由具备相应资质的医疗机构评估，不应依据网络文章自行选择。</p><p class="faq-related">相关知识：<a href="kepu.html#ivf">IVF 基础知识</a> · <a href="zhuanti.html#fuzhu">辅助生殖技术专题</a></p><p class="faq-source">参考资料：国家卫健委《人类辅助生殖技术管理办法》。</p></details></article>
     </section>
-
-    <section id="jiancha" style="margin-top:40px;">
-      <h2 style="color:var(--deep-green);margin-bottom:20px;">检查相关问题</h2>
-      <div class="faq-item">
-        <div class="faq-question">报告上有箭头（偏高/偏低）是不是就很严重？</div>
-        <div class="faq-answer">
-          不一定。参考范围是统计区间，单项偏离可能有多种原因。需要结合其他指标、年龄、病史由医生综合解读，切勿自行下结论。
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">AMH低是不是就不能生了？</div>
-        <div class="faq-answer">
-          AMH反映卵巢储备的一个侧面，数值受年龄影响较大。低不等于“不能”，但可能提示需要更积极的评估与规划。具体意义请医生结合超声等一起看。
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">精液检查一次异常就代表有问题吗？</div>
-        <div class="faq-answer">
-          不一定。精液质量受近期发热、压力、禁欲时间、环境等影响，医生常建议间隔一段时间复查后再判断。
-        </div>
-      </div>
+    <section id="jiancha" class="faq-group"><h2>检查知识</h2>
+      <article class="faq-card" id="faq-amh" data-search="AMH 抗缪勒管激素 卵巢储备 检查报告"><h3>AMH 检查是什么？单看数值能判断生育力吗？</h3><p class="faq-summary">AMH 是评估卵巢储备相关情况时可能参考的指标之一，不能单独代表整体生育力或预测个人结局。</p><details><summary>查看科普回答</summary><p>AMH 需要结合年龄、病史、超声及其他检查综合理解。不同实验室的检测方法和参考范围也可能不同。不要仅凭一个数值自行诊断或决定治疗。</p><p class="faq-related">相关知识：<a href="kepu.html#jiancha">常见检查解读</a> · <a href="kepu.html#nianling">年龄与生育力</a></p><p class="faq-source">参考资料：请结合正规医疗机构出具的检验报告及专业人员解释。</p></details></article>
+      <article class="faq-card" id="faq-semen" data-search="精液检查 男性 精子 活力 形态"><h3>男性是否也需要进行生育相关检查？</h3><p class="faq-summary">生育评估涉及双方，男方相关检查也是了解整体情况的一部分。</p><details><summary>查看科普回答</summary><p>精液分析等检查可能用于评估男性生殖相关指标。单次结果可能受采样条件、近期健康状况等影响，检查和复查安排应由医生说明。</p><p class="faq-related">相关知识：<a href="kepu.html#jiancha">常见检查解读</a></p></details></article>
     </section>
-
-    <section id="liucheng" style="margin-top:40px;">
-      <h2 style="color:var(--deep-green);margin-bottom:20px;">流程与时间问题</h2>
-      <div class="faq-item">
-        <div class="faq-question">一个辅助生殖周期大概要多久？</div>
-        <div class="faq-answer">
-          从准备到移植，常见需要数周时间，具体取决于方案、监测反应与是否冷冻移植。中间有等待与调整是正常的。以您的医疗团队安排为准。
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">移植后多久能知道结果？</div>
-        <div class="faq-answer">
-          通常按医嘱在移植后约两周左右进行血检等确认。过早自行测试可能不准确，也容易增加情绪波动。请遵循医生指导。
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">一次不成功还能再试吗？</div>
-        <div class="faq-answer">
-          许多情况下可以，但需要评估身体恢复、胚胎情况、原因分析等。是否继续、间隔多久，由主诊医生与您共同决定。
-        </div>
-      </div>
+    <section id="liucheng" class="faq-group"><h2>流程与时间</h2>
+      <article class="faq-card" id="faq-stimulation" data-search="促排卵 促排 药物 卵泡 监测"><h3>促排卵是什么？为什么需要监测？</h3><p class="faq-summary">促排卵是部分辅助生殖周期中的医疗环节，需要由专业团队根据身体反应进行监测。</p><details><summary>查看科普回答</summary><p>促排卵的目标、药物选择和监测方式因方案而异。药物种类、剂量、用药时间均属于医疗决策，请勿自行购买或调整药物。</p><p class="faq-related">相关知识：<a href="kepu.html#cui-pai">促排卵基础知识</a> · <a href="zhuanti.html#zhouqi">周期流程概览</a></p></details></article>
+      <article class="faq-card" id="faq-retrieval" data-search="取卵 取精 受精 实验室 操作 风险"><h3>取卵与受精大致包括哪些环节？</h3><p class="faq-summary">取卵属于医疗操作，后续受精和胚胎观察在实验室规范条件下进行。</p><details><summary>查看科普回答</summary><p>取卵前评估、操作安排、麻醉或镇静方式及术后观察需由医疗团队说明。实验室会根据技术规范处理卵子和精子。本文不提供操作指导或个体化流程。</p><p class="faq-related">相关知识：<a href="kepu.html#quluan">取卵与受精过程</a></p></details></article>
+      <article class="faq-card" id="faq-transfer" data-search="胚胎培养 移植 冻胚 新鲜移植"><h3>胚胎培养和移植分别是什么？</h3><p class="faq-summary">胚胎培养是在实验室观察受精后的发育过程；移植是医疗团队实施的后续医疗操作。</p><details><summary>查看科普回答</summary><p>胚胎培养阶段、评估结果和移植时机因个体情况而异。是否新鲜移植或冷冻后移植，需要结合医疗评估和患者知情选择。</p><p class="faq-related">相关知识：<a href="kepu.html#peitai">胚胎培养与移植科普</a></p></details></article>
     </section>
-
-    <section id="feiyong" style="margin-top:40px;">
-      <h2 style="color:var(--deep-green);margin-bottom:20px;">费用与准备问题</h2>
-      <div class="faq-item">
-        <div class="faq-question">费用大概是多少？</div>
-        <div class="faq-answer">
-          费用因地区、医院、方案、用药、是否进周、是否有额外项目而差异很大。建议直接咨询目标医院的收费与医保/商保政策，并预留一定弹性。本站不提供具体报价。
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">备孕或治疗前需要准备什么？</div>
-        <div class="faq-answer">
-          常见包括：双方体检与专项检查、调整生活习惯、了解流程与时间安排、做好心理与经济准备、准备必要证件与知情同意相关材料。清单以医院要求为准。
-        </div>
-      </div>
+    <section id="dongluan" class="faq-group"><h2>冷冻保存</h2>
+      <article class="faq-card" id="faq-freezing" data-search="冻胚 冻卵 冷冻保存 区别 生育力保存"><h3>冻胚和冻卵有什么区别？</h3><p class="faq-summary">冻胚保存的是受精后形成的胚胎，冻卵保存的是未受精卵子。</p><details><summary>查看科普回答</summary><p>两者的保存对象、后续使用流程、知情同意和伦理法律事项不同。冷冻保存不等于未来妊娠保证，具体政策、适用条件和风险应向正规医疗机构了解。</p><p class="faq-related">相关知识：<a href="kepu.html#dongluan">冻胚与冻卵知识</a> · <a href="zhuanti.html#dongluan">冻卵与生育力保存专题</a></p></details></article>
     </section>
-
-    <section id="xinli" style="margin-top:40px;">
-      <h2 style="color:var(--deep-green);margin-bottom:20px;">心理与支持问题</h2>
-      <div class="faq-item">
-        <div class="faq-question">过程中情绪很低落正常吗？</div>
-        <div class="faq-answer">
-          非常常见。不确定感、等待、身体不适、外界压力都可能带来情绪波动。允许自己有情绪，与伴侣沟通，必要时寻求专业心理支持，都是健康的应对方式。
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">怎么和家人/朋友沟通？</div>
-        <div class="faq-answer">
-          可以设定边界：选择信任的人适度分享，不必向所有人解释细节。清晰表达“需要倾听还是建议”，有助于减少误解与压力。
-        </div>
-      </div>
+    <section id="fengxian" class="faq-group"><h2>伦理与风险</h2>
+      <article class="faq-card" id="faq-risk" data-search="辅助生殖 风险 伦理 知情同意 隐私 资质"><h3>了解辅助生殖技术时，应该关注哪些风险和伦理问题？</h3><p class="faq-summary">需要关注医疗风险、知情同意、隐私保护、机构资质及相关伦理规范。</p><details><summary>查看科普回答</summary><p>在医疗沟通中，可了解适应证、替代方案、可能风险和不确定性，并确认医疗机构是否获准开展相应技术。人类辅助生殖技术应在经批准并登记的医疗机构实施，相关过程应遵守法律法规和伦理原则。</p><p class="faq-related">相关知识：<a href="kepu.html#lunli">辅助生殖伦理与风险</a></p><p class="faq-source">参考资料：<a href="https://www.nhc.gov.cn/wjw/c100221/202201/e61040c5c38c4b4696cdb3ee68ee27e1.shtml" target="_blank" rel="noopener">国家卫健委管理办法</a>。</p></details></article>
     </section>
-
-    <section id="qita" style="margin-top:40px;">
-      <h2 style="color:var(--deep-green);margin-bottom:20px;">其他高频疑问</h2>
-      <div class="faq-item">
-        <div class="faq-question">网上的成功经验可以照着做吗？</div>
-        <div class="faq-answer">
-          不建议照搬。每个人病因、身体反应、方案都不同。经验可以给人鼓励，但医疗决策应基于自身检查与医生建议。
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">邻伊能帮我推荐医院或方案吗？</div>
-        <div class="faq-answer">
-          不能。我们专注知识科普与疑惑解答，不推荐具体机构、不提供诊疗方案。请选择具备相应资质的正规医疗机构。
-        </div>
-      </div>
-      <div class="faq-item">
-        <div class="faq-question">如何联系你们？</div>
-        <div class="faq-answer">
-          请前往「在线交流」页面，添加微信号 WEIXIN2025g。说明来意后，我们会在能力范围内回复科普相关疑问。
-        </div>
-      </div>
+    <section id="pingtai" class="faq-group"><h2>关于邻伊平台</h2>
+      <article class="faq-card" id="faq-platform" data-search="邻伊 平台 服务 微信 AI 诊断 医院 推荐"><h3>邻伊能否解读个人检查报告、推荐医院或制定治疗方案？</h3><p class="faq-summary">不能。邻伊提供一般性科普和内容导航，不提供诊断、报告解读、治疗方案或医疗机构推荐。</p><details><summary>查看科普回答</summary><p>请勿通过网站或 AI 助手提交个人病历、检查报告、身份证件或联系方式。具体健康问题请向正规医疗机构和专业人员咨询。</p><p class="faq-related">相关说明：<a href="jiaoliu.html">在线交流与服务边界</a>。</p></details></article>
     </section>
-
-    <div style="text-align:center;margin-top:50px;">
-      <a href="jiaoliu.html" class="btn btn-primary">还有疑问？添加微信咨询</a>
-    </div>
-  </div>
-
-  <footer class="site-footer">
-    <div class="footer-bottom" style="border:none;margin:0;padding:30px 20px;">
-      <p>© 2025-2026 邻伊 · 内容仅供科普参考</p>
-    </div>
-  </footer>
+    <p id="faqNoResults" class="faq-no-results" hidden>没有找到匹配的问题。可以尝试更短的关键词，或浏览科普专题。</p>
+    <div class="disclaimer">本站内容仅供一般健康知识科普，不构成医疗广告、诊断、治疗建议或个体化医疗方案。网站内容不替代专业医疗服务。</div>
+  </main>
+  <footer class="site-footer"><div class="footer-bottom" style="border:none;margin:0;padding:30px 20px;"><p>© 2025-2026 邻伊 · 内容仅供科普参考</p></div></footer>
   <script src="../js/main.js"></script>
-</body>
-</html>
+</body></html>
