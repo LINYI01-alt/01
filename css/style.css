@@ -1039,7 +1039,7 @@ img {
 .home-search-heading p{margin:0;color:#68786f;font-size:14px;line-height:1.8}
 .site-search-form{display:flex;gap:10px;max-width:760px;margin:0 auto}
 .site-search-form input,.faq-search-form input{min-width:0;flex:1;min-height:52px;padding:0 17px;border:1px solid #d6d9cf;border-radius:7px;background:#fff;color:#243d33;font:inherit}
-.site-search-form button,.faq-search-form button{min-height:52px;padding:0 24px;border:0;border-radius:7px;background:#285341;color:#fff;font:600 14px inherit;cursor:pointer}
+.site-search-form button,.faq-search-form button{min-height:52px;padding:0 24px;border:0;border-radius:7px;background:#285341;color:#fff;font:600 14px Arial, 'Noto Sans SC', sans-serif;cursor:pointer}
 .site-search-form button span{margin-left:12px}
 .search-hotwords{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:9px;margin-top:16px;color:#7b877e;font-size:12px}
 .search-hotwords a,.faq-category-nav a{padding:7px 12px;border:1px solid #e0ded4;border-radius:30px;background:#fff;color:#466653;text-decoration:none}
