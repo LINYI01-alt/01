@@ -23,6 +23,66 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 
+
+  // 首页站内搜索：仅在浏览器本地匹配，不上传搜索词。
+  const searchForm = document.getElementById('siteSearchForm');
+  const searchInput = document.getElementById('siteSearchInput');
+  const searchResults = document.getElementById('siteSearchResults');
+  const knowledgeIndex = [
+    {title:'IVF 基础知识：体外受精是什么？',desc:'了解体外受精与胚胎移植的基本概念。',url:'pages/kepu.html#ivf',keys:'IVF 试管婴儿 体外受精 胚胎移植'},
+    {title:'促排卵基础知识',desc:'了解促排卵的目的、监测概念与用药边界。',url:'pages/kepu.html#cui-pai',keys:'促排卵 促排 卵泡 药物 监测'},
+    {title:'取卵与受精过程',desc:'了解取卵、受精和实验室环节的基本概念。',url:'pages/kepu.html#quluan',keys:'取卵 受精 取精 实验室'},
+    {title:'胚胎培养与移植科普',desc:'了解胚胎培养、评估和移植的概念。',url:'pages/kepu.html#peitai',keys:'胚胎 培养 移植 囊胚 冻胚'},
+    {title:'冻胚与冻卵知识',desc:'了解冻胚、冻卵保存对象和流程差异。',url:'pages/kepu.html#dongluan',keys:'冻胚 冻卵 冷冻 保存 生育力'},
+    {title:'辅助生殖伦理与风险',desc:'了解知情同意、机构资质、隐私与风险。',url:'pages/kepu.html#lunli',keys:'伦理 风险 隐私 资质 知情同意'},
+    {title:'常见检查解读',desc:'了解 AMH、超声及男性相关检查的基础概念。',url:'pages/kepu.html#jiancha',keys:'AMH 检查 报告 卵巢储备 精液'},
+    {title:'年龄与生育力',desc:'了解年龄与生育力变化的基本知识。',url:'pages/kepu.html#nianling',keys:'年龄 生育力 卵巢储备'},
+    {title:'常见问题问答',desc:'按分类浏览辅助生殖和生育健康高频问题。',url:'pages/faq.html',keys:'FAQ 常见问题 问答'},
+    {title:'在线交流与服务边界',desc:'了解邻伊的非诊疗服务范围与隐私提醒。',url:'pages/jiaoliu.html',keys:'在线交流 反馈 隐私 服务'}
+  ];
+  function runSiteSearch(value) {
+    if (!searchResults) return;
+    const query = (value || '').trim().toLowerCase();
+    searchResults.textContent = '';
+    if (!query) { searchResults.textContent = '请输入关键词，例如 IVF、AMH、促排卵或胚胎培养。'; return; }
+    const terms = query.split(/\s+/).filter(Boolean);
+    const matches = knowledgeIndex.filter(item => terms.some(term => (item.title+' '+item.desc+' '+item.keys).toLowerCase().includes(term)));
+    if (!matches.length) { searchResults.textContent = '暂未找到相关内容。可以尝试“IVF”“检查”“胚胎”或浏览科普专题。'; return; }
+    matches.forEach(item => {
+      const a = document.createElement('a'); a.className = 'site-search-result'; a.href = item.url;
+      const strong = document.createElement('strong'); strong.textContent = item.title;
+      const small = document.createElement('small'); small.textContent = item.desc;
+      a.append(strong, small); searchResults.appendChild(a);
+    });
+  }
+  if (searchForm && searchInput) {
+    searchForm.addEventListener('submit', function(e){ e.preventDefault(); runSiteSearch(searchInput.value); });
+    searchInput.addEventListener('input', function(){ if (searchInput.value.trim().length >= 2) runSiteSearch(searchInput.value); else if(searchResults) searchResults.textContent=''; });
+  }
+
+  // FAQ 本地筛选：不把搜索词发送到服务器。
+  const faqForm = document.getElementById('faqSearchForm');
+  const faqInput = document.getElementById('faqSearchInput');
+  if (faqForm && faqInput) {
+    const cards = Array.from(document.querySelectorAll('.faq-card'));
+    const count = document.getElementById('faqSearchCount');
+    const noResults = document.getElementById('faqNoResults');
+    function filterFaq() {
+      const q = faqInput.value.trim().toLowerCase();
+      let visible = 0;
+      cards.forEach(card => {
+        const show = !q || (card.innerText+' '+(card.dataset.search || '')).toLowerCase().includes(q);
+        card.hidden = !show; if (show) visible++;
+      });
+      document.querySelectorAll('.faq-group').forEach(group => { group.hidden = !Array.from(group.querySelectorAll('.faq-card')).some(card => !card.hidden); });
+      if (count) count.textContent = q ? '找到 '+visible+' 个相关问题' : '可搜索下方全部问答';
+      if (noResults) noResults.hidden = visible !== 0;
+    }
+    faqForm.addEventListener('submit', function(e){ e.preventDefault(); filterFaq(); });
+    faqInput.addEventListener('input', filterFaq);
+  }
+
+
   // FAQ 手风琴
   document.querySelectorAll('.faq-question').forEach(function (q) {
     q.addEventListener('click', function () {
@@ -105,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!question) return;
 
     // 敏感个人信息和个体化诊疗请求不发送给 AI。
-    const hasPersonalId = /(?:1[3-9]\\d{9}|\\d{17}[0-9Xx])/i.test(question);
+    const hasPersonalId = /(?:1[3-9]\d{9}|\d{17}[0-9Xx])/i.test(question);
     const clinicalRequest = /(我的(检查|报告|化验|B超|超声|AMH|病历)|报告(显示|提示|结果)|数值(偏高|偏低)|帮我(诊断|判断|看报告|制定方案)|该吃什么药|用药剂量|打多少(单位|针)|促排方案|成功率(多少|预测)|是否(能怀孕|适合试管)|症状.*怎么办)/i.test(question);
     if (hasPersonalId || clinicalRequest) {
       addMessage(hasPersonalId
