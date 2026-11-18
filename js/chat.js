@@ -48,10 +48,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!user) {
       const { data, error } = await client.auth.signInAnonymously();
       if (error) {
-        if (/anonymous|disabled|signup/i.test(error.message)) {
-          throw new Error("在线交流尚未启用访客会话。网站管理员需在 Supabase Auth 设置中开启 Anonymous Sign-Ins 后再开放留言。");
-        }
-        throw error;
+        console.error("邻伊访客登录失败", { message: error.message, code: error.code, status: error.status });
+        const detail = [error.code, error.message].filter(Boolean).join("：");
+        throw new Error("访客会话创建失败" + (detail ? "（" + detail + "）" : "。") + "请将此提示发给网站管理员。");
       }
       user = data.user;
     }
