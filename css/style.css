@@ -1196,3 +1196,37 @@ img {
 .chat-admin-detail .visitor-chat-form{margin-top:12px}
 @media(max-width:760px){.chat-intro{grid-template-columns:1fr;padding:22px}.chat-admin-layout{grid-template-columns:1fr}.chat-conversation-list{max-height:240px}}
 @media(max-width:520px){.visitor-chat-card{padding:17px}.visitor-chat-header{flex-direction:column}.chat-message{max-width:94%}.chat-compose-bottom{align-items:flex-start;flex-direction:column}.chat-compose-bottom .btn{width:100%}}
+
+
+/* 首页内容入口：标题与说明上下分层，三类核心内容等宽呈现 */
+.home-directory-section{padding-top:76px;padding-bottom:70px}
+.home-directory-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;margin:0 auto 30px;max-width:1120px;padding-bottom:22px;border-bottom:1px solid #e7e7de}
+.home-directory-title-group{max-width:720px}
+.home-directory-title-group h2{margin:9px 0 0;color:#244638;font-size:clamp(25px,3.4vw,36px);line-height:1.4;letter-spacing:.01em}
+.home-directory-heading>p{max-width:310px;margin:0 0 4px;color:#68786f;font-size:15px;line-height:1.9}
+.home-directory-grid{max-width:1120px;margin:0 auto;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.home-directory-grid .home-service-card{min-height:365px;border-radius:13px;overflow:hidden;box-shadow:0 8px 24px rgba(35,61,48,.07);transition:transform .22s ease,box-shadow .22s ease}
+.home-directory-grid .home-service-card:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(35,61,48,.12)}
+.home-directory-grid .home-service-content{left:24px;right:24px;bottom:24px}
+.home-directory-grid .home-service-content h3{font-size:23px;margin:9px 0}
+.home-directory-grid .home-service-content p{min-height:78px;font-size:13px;line-height:1.8}
+.home-directory-footnote{display:flex;align-items:center;gap:14px;max-width:1120px;margin:22px auto 0;padding:16px 20px;border:1px solid #e8e8df;border-radius:10px;background:#f8f8f3}
+.home-directory-footnote>span{flex-shrink:0;color:#315744;font-size:14px;font-weight:700}
+.home-directory-footnote p{flex:1;margin:0;color:#77847b;font-size:13px;line-height:1.7}
+.home-directory-footnote a{flex-shrink:0;color:#35654f;font-size:13px;font-weight:700;text-decoration:none}
+.home-contact-card{align-items:center}
+.home-contact-card h2{line-height:1.45}
+@media(max-width:900px){
+ .home-directory-heading{align-items:flex-start;flex-direction:column;gap:8px}
+ .home-directory-heading>p{max-width:none}
+ .home-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .home-directory-grid .home-service-card:last-child{grid-column:1/-1;min-height:300px}
+}
+@media(max-width:560px){
+ .home-directory-section{padding-top:48px;padding-bottom:48px}
+ .home-directory-heading{margin-bottom:20px;padding-bottom:17px}
+ .home-directory-grid{grid-template-columns:1fr;gap:13px}
+ .home-directory-grid .home-service-card,.home-directory-grid .home-service-card:last-child{grid-column:auto;min-height:290px}
+ .home-directory-grid .home-service-content{left:19px;right:19px;bottom:19px}
+ .home-directory-footnote{align-items:flex-start;flex-direction:column;gap:6px;padding:15px}
+}
