@@ -86,6 +86,23 @@
         </div>
       </div>
 
+      <section class="admin-card" id="chatAdminSection">
+        <h2>在线交流管理</h2>
+        <p>查看访客留言并以邻伊管理员身份回复。仅处理网站使用、科普内容建议和资料反馈，不进行诊疗咨询。</p>
+        <div class="admin-toolbar"><button id="refreshChats" class="btn btn-outline" type="button">刷新会话</button><span id="chatAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
+        <div class="chat-admin-layout">
+          <div class="chat-admin-list"><h3>访客会话</h3><div id="chatConversationList" class="chat-conversation-list">正在加载…</div></div>
+          <div class="chat-admin-detail">
+            <h3 id="chatAdminTitle">选择一个会话</h3>
+            <div id="chatAdminMessages" class="chat-messages chat-admin-messages"><div class="chat-empty">选择左侧访客会话后，这里会显示交流内容。</div></div>
+            <form id="chatAdminReplyForm" class="visitor-chat-form" hidden>
+              <textarea id="chatAdminReply" rows="3" maxlength="1200" placeholder="输入给访客的回复…" required></textarea>
+              <div class="chat-compose-bottom"><small>仅回复非诊疗类内容</small><button id="chatAdminSend" class="btn btn-primary" type="submit">发送回复</button><button id="chatAdminClose" class="btn btn-outline" type="button">结束会话</button></div>
+            </form>
+          </div>
+        </div>
+      </section>
+
       <section class="admin-card" id="aiArticleSection">
         <h2>AI 科普文章管理</h2>
         <p>输入主题生成草稿，编辑确认后手动发布。未发布内容仅管理员可见。</p>
