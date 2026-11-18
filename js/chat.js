@@ -86,8 +86,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const content = input.value.trim();
     if (!content) return;
     if (content.length > 1200) { setNotice("留言请控制在 1200 字以内。", "error"); return; }
-    const hasPhone = /(?:\\+?86[- ]?)?1[3-9]\\d{9}/.test(content);
-    const hasId = /\\b[1-9]\\d{5}(?:19|20)\\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\\d|3[01])\\d{3}[0-9Xx]\\b/.test(content);
+    const hasPhone = /(?:\+?86[- ]?)?1[3-9]\d{9}/.test(content);
+    const hasId = /\b[1-9]\d{5}(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])\d{3}[0-9Xx]\b/.test(content);
     const personalMedical = /(我的|本人|我这边).{0,8}(病历|检查报告|化验单|用药记录|诊断结果|检查结果)/.test(content);
     if (hasPhone || hasId || personalMedical) {
       setNotice("为保护隐私，这条留言未发送。请删除手机号、身份证号及个人病历/检查资料，只保留一般网站或科普内容问题。", "error");
