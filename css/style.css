@@ -1120,3 +1120,79 @@ img {
 .home-service-content p{min-height:72px;font-size:12px}
 @media(max-width:900px){.home-search-topics{grid-template-columns:repeat(2,minmax(0,1fr))}.home-service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-service-card,.home-service-card:first-child{grid-column:auto;min-height:300px}}
 @media(max-width:560px){.home-search-section{padding:40px 16px}.site-search-form{flex-direction:column}.site-search-form button{width:100%}.home-search-topics{grid-template-columns:1fr;gap:9px}.home-search-topics a{min-height:90px;padding:15px 17px}.home-service-grid{grid-template-columns:1fr}.home-service-card,.home-service-card:first-child{min-height:265px}.home-service-content p{min-height:0}}
+
+
+/* 关于邻伊：统一内容层级与留白 */
+.about-page{max-width:1120px;margin:0 auto;padding:34px 22px 72px}
+.about-lead{padding:clamp(28px,5vw,58px);border-radius:18px;background:linear-gradient(135deg,#f2f5ef,#fbf8f0);border:1px solid #e4e8df}
+.about-eyebrow,.about-section-heading>span,.about-contact>div>span{display:inline-block;color:#a1844d;font-size:11px;font-weight:700;letter-spacing:.16em}
+.about-lead h2{margin:14px 0 18px;color:#244638;font-size:clamp(30px,4.6vw,48px);line-height:1.35}
+.about-lead-text{max-width:800px;color:#435b50;font-size:17px;line-height:2}
+.about-lead-note{max-width:800px;margin-top:14px;padding-left:14px;border-left:3px solid #b99b62;color:#718077;line-height:1.9}
+.about-section{padding:58px 0 8px}
+.about-section-heading{margin-bottom:25px}
+.about-section-heading h2{margin:8px 0;color:#254638;font-size:clamp(23px,3vw,30px)}
+.about-section-heading p{color:#77847c}
+.about-principle-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
+.about-principle-card{min-height:205px;padding:23px 20px;border:1px solid #e8e5dc;border-radius:12px;background:#fff}
+.about-principle-card>b{color:#b69a63;font-size:12px;letter-spacing:.12em}
+.about-principle-card h3{margin:14px 0 9px;color:#2a4b3d;font-size:19px}
+.about-principle-card p,.about-steps p{color:#718078;font-size:14px;line-height:1.9}
+.about-method{margin-top:14px;padding:38px;border-radius:16px;background:#f8f7f2}
+.about-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;list-style:none;counter-reset:aboutstep}
+.about-steps li{position:relative;padding:18px 16px 16px;background:#fff;border:1px solid #e9e5da;border-radius:10px;counter-increment:aboutstep}
+.about-steps li:before{content:"0" counter(aboutstep);display:block;margin-bottom:12px;color:#b69a63;font-size:12px;font-weight:700}
+.about-steps strong{display:block;margin-bottom:8px;color:#2b4c3f}
+.about-notice{padding:24px 26px;border:1px solid #e8e3d6;border-radius:12px;background:#fff}
+.about-notice p{color:#66766d;line-height:1.95}
+.about-notice p+p{margin-top:12px}
+.about-contact{display:flex;align-items:center;justify-content:space-between;gap:22px;margin-top:54px;padding:30px 34px;border-radius:14px;background:#254b3b;color:#fff}
+.about-contact h2{margin:8px 0;font-size:24px}
+.about-contact p{color:#d7e2da}
+.about-contact>div>span{color:#d7bd83}
+.about-contact .btn{flex-shrink:0}
+@media(max-width:900px){.about-principle-grid,.about-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.about-page{padding:20px 15px 48px}.about-section{padding-top:40px}.about-principle-grid,.about-steps{grid-template-columns:1fr}.about-principle-card{min-height:0}.about-method{padding:22px 16px}.about-contact{align-items:flex-start;flex-direction:column;padding:24px 20px}.about-contact h2{font-size:21px}}
+
+/* 邻伊在线交流：访客与站长双向消息 */
+.chat-page{max-width:1040px}
+.chat-intro{display:grid;grid-template-columns:1.5fr 1fr;gap:28px;align-items:center;padding:30px;border:1px solid #e5e7dd;border-radius:16px;background:#f6f7f1}
+.chat-intro h2{margin:9px 0;color:#244638;font-size:28px}
+.chat-intro p{color:#65766d;line-height:1.9}
+.chat-intro-points{display:grid;gap:10px}
+.chat-intro-points span{padding:10px 13px;border-radius:8px;background:#fff;color:#476352;font-size:14px}
+.chat-boundary{margin:22px 0;padding:18px 21px;border-left:4px solid #b79a60;border-radius:8px;background:#fbf6e9}
+.chat-boundary strong{color:#604f2d}
+.chat-boundary p{margin-top:7px;color:#776b51;font-size:14px;line-height:1.85}
+.visitor-chat-card{margin:28px 0;padding:25px;border:1px solid #e2e7df;border-radius:16px;background:#fff;box-shadow:0 8px 26px rgba(35,65,48,.05)}
+.visitor-chat-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:18px;border-bottom:1px solid #edf0e9}
+.visitor-chat-header h2{margin:6px 0;color:#26483a;font-size:22px}
+.visitor-chat-header p{color:#7a877f;font-size:13px}
+.chat-status-pill{padding:6px 11px;border-radius:20px;background:#f3eee2;color:#8a7041;font-size:12px;white-space:nowrap}
+.chat-status-pill.is-online{background:#e7f3e9;color:#2d7048}
+.chat-notice{margin:14px 0;color:#77847b;font-size:13px;min-height:1.5em}
+.chat-notice.success{color:#2d7048}.chat-notice.error{color:#a13e3e}
+.chat-messages{display:flex;flex-direction:column;gap:12px;min-height:180px;max-height:390px;overflow:auto;padding:16px 2px}
+.chat-empty{padding:28px 14px;text-align:center;color:#89958d;font-size:14px;line-height:1.8}
+.chat-message{max-width:82%;padding:12px 15px;border-radius:12px}
+.chat-message small{display:block;margin-bottom:6px;color:#7e8a82;font-size:11px}
+.chat-message p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75;font-size:14px}
+.chat-message.from-visitor{align-self:flex-end;background:#edf4ed;color:#315543;border-bottom-right-radius:4px}
+.chat-message.from-admin{align-self:flex-start;background:#f5f3ed;color:#48594f;border-bottom-left-radius:4px}
+.visitor-chat-form{padding-top:12px;border-top:1px solid #edf0e9}
+.visitor-chat-form textarea{display:block;width:100%;min-height:78px;padding:13px 14px;border:1px solid #dfe5dc;border-radius:9px;resize:vertical;font:inherit;line-height:1.7;outline-offset:2px}
+.chat-compose-bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:10px}
+.chat-compose-bottom small{color:#89948c;font-size:12px}
+.chat-help-grid{margin-top:34px}
+.chat-admin-layout{display:grid;grid-template-columns:minmax(230px,.8fr) minmax(0,1.6fr);gap:18px;margin-top:18px}
+.chat-admin-list,.chat-admin-detail{min-width:0;padding:16px;border:1px solid var(--border);border-radius:10px;background:#fff}
+.chat-admin-list h3,.chat-admin-detail h3{margin-bottom:12px;color:var(--deep-green)}
+.chat-conversation-list{display:grid;gap:8px;max-height:440px;overflow:auto}
+.chat-conversation-item{display:grid;gap:5px;width:100%;padding:12px;text-align:left;border:1px solid #e6e9e2;border-radius:8px;background:#fbfcf9;cursor:pointer}
+.chat-conversation-item.active{border-color:#8eaa94;background:#eff5ef}
+.chat-conversation-item strong{color:#315342;font-size:14px}
+.chat-conversation-item small{color:#859087;font-size:11px}
+.chat-admin-messages{min-height:240px;max-height:440px}
+.chat-admin-detail .visitor-chat-form{margin-top:12px}
+@media(max-width:760px){.chat-intro{grid-template-columns:1fr;padding:22px}.chat-admin-layout{grid-template-columns:1fr}.chat-conversation-list{max-height:240px}}
+@media(max-width:520px){.visitor-chat-card{padding:17px}.visitor-chat-header{flex-direction:column}.chat-message{max-width:94%}.chat-compose-bottom{align-items:flex-start;flex-direction:column}.chat-compose-bottom .btn{width:100%}}
