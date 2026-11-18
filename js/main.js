@@ -204,3 +204,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
 })();
+
+
+// 全站加载右下角在线交流浮窗；保留左下角 AI 科普助手。
+(function loadLinyiChatWidget() {
+  if (document.getElementById("linyi-chat-widget-loader")) return;
+  const script = document.createElement("script");
+  script.id = "linyi-chat-widget-loader";
+  script.src = new URL("chat-widget.js", document.currentScript && document.currentScript.src
+    ? document.currentScript.src
+    : window.location.href.replace(/[^/]*$/, "js/main.js")).href;
+  script.defer = true;
+  document.head.appendChild(script);
+})();
