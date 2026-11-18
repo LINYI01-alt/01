@@ -222,4 +222,106 @@ document.addEventListener("DOMContentLoaded", () => {
     loadAiArticles();
   }
 
+
+  // 在线交流：管理员查看访客会话并回复
+  const chatAdminSection = document.getElementById("chatAdminSection");
+  if (chatAdminSection) {
+    const list = document.getElementById("chatConversationList");
+    const messages = document.getElementById("chatAdminMessages");
+    const title = document.getElementById("chatAdminTitle");
+    const notice = document.getElementById("chatAdminNotice");
+    const replyForm = document.getElementById("chatAdminReplyForm");
+    const replyInput = document.getElementById("chatAdminReply");
+    const sendReply = document.getElementById("chatAdminSend");
+    const closeChat = document.getElementById("chatAdminClose");
+    let activeConversation = null;
+    let adminChatChannel = null;
+    const chatNotice = (text, kind = "") => { notice.textContent = text; notice.className = "notice " + kind; };
+
+    async function loadChatList() {
+      const { data, error } = await client.from("chat_conversations")
+        .select("id,subject,status,created_at,updated_at")
+        .order("updated_at", { ascending: false }).limit(100);
+      if (error) { chatNotice("会话读取失败：" + error.message, "error"); return; }
+      list.replaceChildren();
+      if (!data || !data.length) {
+        const empty = document.createElement("p"); empty.className = "chat-empty";
+        empty.textContent = "目前还没有访客留言。"; list.appendChild(empty); return;
+      }
+      data.forEach(item => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "chat-conversation-item" + (activeConversation?.id === item.id ? " active" : "");
+        const subject = document.createElement("strong"); subject.textContent = item.subject || "网站内容交流";
+        const meta = document.createElement("small");
+        meta.textContent = (item.status === "open" ? "进行中" : "已结束") + " · " + new Date(item.updated_at).toLocaleString("zh-CN");
+        button.append(subject, meta);
+        button.addEventListener("click", () => selectConversation(item));
+        list.appendChild(button);
+      });
+      chatNotice("已加载 " + data.length + " 个访客会话。");
+    }
+    async function loadChatMessages() {
+      if (!activeConversation) return;
+      const { data, error } = await client.from("chat_messages")
+        .select("id,sender_role,content,created_at")
+        .eq("conversation_id", activeConversation.id)
+        .order("created_at", { ascending: true });
+      if (error) { chatNotice("消息读取失败：" + error.message, "error"); return; }
+      messages.replaceChildren();
+      if (!data || !data.length) {
+        const empty = document.createElement("div"); empty.className = "chat-empty"; empty.textContent = "访客尚未发送消息。"; messages.appendChild(empty);
+      } else data.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "chat-message " + (item.sender_role === "admin" ? "from-visitor" : "from-admin");
+        const who = document.createElement("small");
+        who.textContent = (item.sender_role === "admin" ? "邻伊管理员 · " : "访客 · ") + new Date(item.created_at).toLocaleString("zh-CN");
+        const body = document.createElement("p"); body.textContent = item.content;
+        row.append(who, body); messages.appendChild(row);
+      });
+      messages.scrollTop = messages.scrollHeight;
+    }
+    async function selectConversation(item) {
+      activeConversation = item;
+      title.textContent = (item.subject || "网站内容交流") + (item.status === "open" ? " · 进行中" : " · 已结束");
+      replyForm.hidden = item.status !== "open";
+      await loadChatList(); await loadChatMessages();
+    }
+    document.getElementById("refreshChats").addEventListener("click", loadChatList);
+    replyForm.addEventListener("submit", async event => {
+      event.preventDefault();
+      if (!activeConversation || activeConversation.status !== "open") return;
+      const content = replyInput.value.trim(); if (!content) return;
+      sendReply.disabled = true; chatNotice("正在发送回复…");
+      const { data: sessionData } = await client.auth.getSession();
+      const { error } = await client.from("chat_messages").insert({
+        conversation_id: activeConversation.id,
+        sender_id: sessionData.session.user.id,
+        sender_role: "admin",
+        content
+      });
+      sendReply.disabled = false;
+      if (error) { chatNotice("回复失败：" + error.message, "error"); return; }
+      replyInput.value = ""; await loadChatMessages(); await loadChatList();
+      chatNotice("回复已发送。", "success");
+    });
+    closeChat.addEventListener("click", async () => {
+      if (!activeConversation || !confirm("确认结束这个访客会话？")) return;
+      const { error } = await client.from("chat_conversations").update({ status: "closed" }).eq("id", activeConversation.id);
+      if (error) { chatNotice("结束会话失败：" + error.message, "error"); return; }
+      activeConversation.status = "closed";
+      replyForm.hidden = true;
+      title.textContent = (activeConversation.subject || "网站内容交流") + " · 已结束";
+      await loadChatList(); chatNotice("会话已结束。", "success");
+    });
+    loadChatList();
+    adminChatChannel = client.channel("admin-chat-updates")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, async payload => {
+        await loadChatList();
+        if (activeConversation && payload.new.conversation_id === activeConversation.id) await loadChatMessages();
+      })
+      .subscribe();
+  }
+
+
 });
