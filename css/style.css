@@ -1230,3 +1230,37 @@ img {
  .home-directory-grid .home-service-content{left:19px;right:19px;bottom:19px}
  .home-directory-footnote{align-items:flex-start;flex-direction:column;gap:6px;padding:15px}
 }
+
+
+/* 多语言选择器：放在主导航第一位 */
+.language-nav-item {
+  display: flex;
+  align-items: center;
+  margin-right: 4px;
+}
+.site-language-select {
+  max-width: 142px;
+  min-height: 36px;
+  padding: 6px 28px 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--warm-white);
+  color: var(--deep-green);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.site-language-select:focus {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+@media (max-width: 900px) {
+  .language-nav-item {
+    padding: 8px 14px;
+    justify-content: flex-start;
+  }
+  .site-language-select {
+    width: 100%;
+    max-width: 220px;
+  }
+}
