@@ -40,6 +40,8 @@
       /* 将原有 AI 科普助手移至左下角，避免与在线客服重叠 */
       #linyi-ai-launcher{left:22px!important;right:auto!important;bottom:22px!important}
       #linyi-ai-panel{left:20px!important;right:auto!important;bottom:82px!important}
+      /* 两个底部入口统一尺寸，避免文字长度造成视觉大小不一致 */
+      #linyi-ai-launcher,#linyi-chat-launcher{box-sizing:border-box!important;width:180px!important;height:52px!important;min-height:52px!important;padding:0 12px!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;white-space:nowrap!important;font-size:14px!important;line-height:1!important;border-radius:28px!important}
       #linyi-chat-launcher{position:fixed;right:22px;bottom:22px;z-index:2147483001;min-height:52px;padding:0 20px;border:0;border-radius:28px;background:linear-gradient(135deg,#f6a45f,#e77b35);color:#fff;font:600 15px "Noto Sans SC",Arial,sans-serif;box-shadow:0 7px 24px rgba(183,91,37,.28);cursor:pointer;display:flex;align-items:center;gap:9px}
       #linyi-chat-launcher:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(183,91,37,.34)}
       #linyi-chat-launcher .chat-launcher-dot{width:9px;height:9px;border-radius:50%;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.2)}
@@ -72,7 +74,8 @@
       @media(max-width:520px){
         #linyi-chat-launcher{right:14px;bottom:14px;min-height:48px;padding:0 16px}
         #linyi-chat-panel{right:8px;bottom:70px;width:calc(100vw - 16px);height:min(620px,calc(100dvh - 82px));border-radius:17px}
-        #linyi-ai-launcher{left:14px!important;bottom:14px!important}
+        #linyi-ai-launcher{left:14px!important;bottom:14px!important;width:180px!important;height:48px!important;min-height:48px!important}
+        #linyi-chat-launcher{right:14px!important;bottom:14px!important;width:180px!important;height:48px!important;min-height:48px!important}
         #linyi-ai-panel{left:8px!important;bottom:70px!important;width:min(350px,calc(100vw - 16px))}
       }
     `;
