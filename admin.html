@@ -30,9 +30,9 @@
     .row-actions{display:flex;gap:6px;flex-wrap:wrap}
     .small-button{border:0;border-radius:6px;padding:7px 10px;cursor:pointer}
     .approve{background:#dff3e6;color:#21633b}.reject{background:#fff2cf;color:#805e00}.delete{background:#fbe4e4;color:#913232}
-    .security-note{font-size:.92rem;color:var(--text-light);background:var(--soft-gray);padding:14px;border-radius:8px}
+    .analytics-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}.analytics-stat{padding:18px;border:1px solid var(--border);border-radius:12px;background:#fff}.analytics-stat span{display:block;color:var(--text-light);font-size:.9rem}.analytics-stat strong{display:block;margin-top:6px;color:var(--deep-green);font-size:1.8rem}.analytics-columns{display:grid;grid-template-columns:1fr 1fr;gap:24px}.analytics-columns h3{margin:10px 0;color:var(--deep-green)}.analytics-table{min-width:0}.security-note{font-size:.92rem;color:var(--text-light);background:var(--soft-gray);padding:14px;border-radius:8px}
     [hidden]{display:none!important}
-    @media(max-width:600px){.admin-card{padding:18px}.admin-wrap{margin-top:20px}}
+    @media(max-width:700px){.analytics-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.analytics-columns{grid-template-columns:1fr}}@media(max-width:600px){.admin-card{padding:18px}.admin-wrap{margin-top:20px}}
   </style>
 </head>
 <body>
@@ -86,8 +86,28 @@
         </div>
       </div>
 
+      
+      <section class="admin-card" id="siteAnalyticsSection">
+        <h2>访客数据中心</h2>
+        <p>仅记录匿名访客标识、页面路径和访问时间，不记录 IP、姓名或搜索内容。访客主动发来的在线交流内容可在下方会话管理中查看。</p>
+        <div class="analytics-summary" aria-live="polite">
+          <div class="analytics-stat"><span>今日访客</span><strong id="analyticsTodayVisitors">—</strong></div>
+          <div class="analytics-stat"><span>今日浏览量</span><strong id="analyticsTodayViews">—</strong></div>
+          <div class="analytics-stat"><span>累计访客（匿名浏览器）</span><strong id="analyticsAllVisitors">—</strong></div>
+          <div class="analytics-stat"><span>累计页面浏览</span><strong id="analyticsAllViews">—</strong></div>
+        </div>
+        <div class="admin-toolbar">
+          <button id="refreshAnalytics" class="btn btn-outline" type="button">刷新统计</button>
+          <span id="analyticsNotice" class="notice" role="status" aria-live="polite"></span>
+        </div>
+        <div class="analytics-columns">
+          <div><h3>最近 7 天</h3><div class="admin-table-wrap"><table class="admin-table analytics-table"><thead><tr><th>日期</th><th>访客</th><th>浏览量</th></tr></thead><tbody id="analyticsDailyRows"></tbody></table></div></div>
+          <div><h3>热门页面</h3><div class="admin-table-wrap"><table class="admin-table analytics-table"><thead><tr><th>页面</th><th>浏览量</th></tr></thead><tbody id="analyticsPageRows"></tbody></table></div></div>
+        </div>
+      </section>
+
       <section class="admin-card" id="chatAdminSection">
-        <h2>在线交流管理</h2>
+        <h2>访客留言与在线交流管理</h2>
         <p>查看访客留言并以邻伊管理员身份回复。仅处理网站使用、科普内容建议和资料反馈，不进行诊疗咨询。</p>
         <div class="admin-toolbar"><button id="refreshChats" class="btn btn-outline" type="button">刷新会话</button><span id="chatAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
         <div class="chat-admin-layout">
