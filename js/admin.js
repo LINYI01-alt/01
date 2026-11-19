@@ -175,6 +175,85 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 
+
+  // 匿名访客统计：仅管理员可读取，明细仅包含随机访客标识、页面路径与时间。
+  const analyticsSection = document.getElementById("siteAnalyticsSection");
+  if (analyticsSection) {
+    const analyticsNotice = document.getElementById("analyticsNotice");
+    const setAnalyticsNotice = (message, kind = "") => {
+      analyticsNotice.textContent = message;
+      analyticsNotice.className = "notice " + kind;
+    };
+    const localDayKey = (date) => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, "0");
+      const d = String(date.getDate()).padStart(2, "0");
+      return y + "-" + m + "-" + d;
+    };
+    async function loadSiteAnalytics() {
+      setAnalyticsNotice("正在读取匿名访问统计…");
+      const { data, error } = await client.from("site_page_views")
+        .select("visitor_key,page_path,created_at")
+        .order("created_at", { ascending: false })
+        .limit(10000);
+      if (error) {
+        setAnalyticsNotice("统计读取失败：" + error.message, "error");
+        return;
+      }
+      const rows = data || [];
+      const todayKey = localDayKey(new Date());
+      const todayRows = rows.filter(row => localDayKey(new Date(row.created_at)) === todayKey);
+      document.getElementById("analyticsTodayVisitors").textContent = new Set(todayRows.map(row => row.visitor_key)).size.toLocaleString("zh-CN");
+      document.getElementById("analyticsTodayViews").textContent = todayRows.length.toLocaleString("zh-CN");
+      document.getElementById("analyticsAllVisitors").textContent = new Set(rows.map(row => row.visitor_key)).size.toLocaleString("zh-CN");
+      document.getElementById("analyticsAllViews").textContent = rows.length.toLocaleString("zh-CN");
+
+      const dailyRows = document.getElementById("analyticsDailyRows");
+      dailyRows.replaceChildren();
+      for (let offset = 0; offset < 7; offset++) {
+        const date = new Date();
+        date.setHours(0, 0, 0, 0);
+        date.setDate(date.getDate() - offset);
+        const key = localDayKey(date);
+        const dayRows = rows.filter(row => localDayKey(new Date(row.created_at)) === key);
+        const tr = document.createElement("tr");
+        for (const value of [key, new Set(dayRows.map(row => row.visitor_key)).size, dayRows.length]) {
+          const td = document.createElement("td");
+          td.textContent = String(value);
+          tr.appendChild(td);
+        }
+        dailyRows.appendChild(tr);
+      }
+
+      const pageCounts = new Map();
+      rows.forEach(row => pageCounts.set(row.page_path, (pageCounts.get(row.page_path) || 0) + 1));
+      const pageRows = document.getElementById("analyticsPageRows");
+      pageRows.replaceChildren();
+      const topPages = Array.from(pageCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      if (!topPages.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 2;
+        td.textContent = "暂时还没有访问记录。";
+        tr.appendChild(td);
+        pageRows.appendChild(tr);
+      } else {
+        topPages.forEach(([path, count]) => {
+          const tr = document.createElement("tr");
+          const pathCell = document.createElement("td");
+          pathCell.textContent = path;
+          const countCell = document.createElement("td");
+          countCell.textContent = String(count);
+          tr.append(pathCell, countCell);
+          pageRows.appendChild(tr);
+        });
+      }
+      setAnalyticsNotice("统计已更新。累计最多显示最近 10,000 次页面浏览记录；访客数按浏览器匿名标识估算。", "success");
+    }
+    document.getElementById("refreshAnalytics").addEventListener("click", loadSiteAnalytics);
+    loadSiteAnalytics();
+  }
+
   // AI 科普文章草稿管理
   const articleBox = document.getElementById("aiArticleSection");
   if (articleBox) {
