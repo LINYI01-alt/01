@@ -33,6 +33,9 @@
     .analytics-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}.analytics-stat{padding:18px;border:1px solid var(--border);border-radius:12px;background:#fff}.analytics-stat span{display:block;color:var(--text-light);font-size:.9rem}.analytics-stat strong{display:block;margin-top:6px;color:var(--deep-green);font-size:1.8rem}.analytics-columns{display:grid;grid-template-columns:1fr 1fr;gap:24px}.analytics-columns h3{margin:10px 0;color:var(--deep-green)}.analytics-table{min-width:0}.security-note{font-size:.92rem;color:var(--text-light);background:var(--soft-gray);padding:14px;border-radius:8px}
     [hidden]{display:none!important}
     @media(max-width:700px){.analytics-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.analytics-columns{grid-template-columns:1fr}}@media(max-width:600px){.admin-card{padding:18px}.admin-wrap{margin-top:20px}}
+  
+    .submission-admin-card{padding:16px 20px;margin:12px 0}.submission-admin-card .admin-table th,.submission-admin-card .admin-table td{padding:7px 9px}.submission-admin-card .content-cell{max-width:280px;max-height:4.8em;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;white-space:normal}.analytics-admin-card{padding:14px 18px;margin:12px 0}.analytics-admin-card .analytics-summary{gap:8px;margin:10px 0}.analytics-admin-card .analytics-stat{padding:10px 12px}.analytics-admin-card .analytics-stat strong{font-size:1.35rem}.analytics-admin-card .analytics-columns{gap:14px}.analytics-admin-card .admin-table th,.analytics-admin-card .admin-table td{padding:6px 8px}.analytics-admin-card .admin-toolbar{margin:8px 0}.chat-admin-layout{grid-template-columns:minmax(250px,.75fr) minmax(0,2fr);gap:20px}.chat-admin-list,.chat-admin-detail{padding:20px}.chat-conversation-list{max-height:560px}.chat-admin-messages{min-height:380px;max-height:620px}.chat-admin-detail .visitor-chat-form textarea{min-height:110px}
+    @media(max-width:760px){.chat-admin-messages{min-height:320px;max-height:500px}.analytics-admin-card{padding:12px}}
   </style>
 </head>
 <body>
@@ -49,7 +52,7 @@
   <main class="admin-wrap">
     <section class="admin-card" id="loginPanel">
       <h1>管理员登录</h1>
-      <p class="security-note">此页面地址不公开展示，但隐藏地址不等于安全措施。实际数据权限由 Supabase 登录身份和数据库 RLS 规则控制。</p>
+      <p class="security-note">后台仅授权管理员账号可进入。未通过管理员身份验证的账号无法查看投稿、留言或访客统计。</p>
       <form id="adminLoginForm" class="admin-form">
         <label>管理员邮箱
           <input id="adminEmail" type="email" autocomplete="username" required>
@@ -63,7 +66,7 @@
     </section>
 
     <section id="dashboard" hidden>
-      <div class="admin-card">
+      <div class="admin-card submission-admin-card">
         <h1>投稿审核</h1>
         <p>当前登录：<strong id="adminUser"></strong></p>
         <div class="admin-toolbar">
@@ -87,7 +90,24 @@
       </div>
 
       
-      <section class="admin-card" id="siteAnalyticsSection">
+      <section class="admin-card" id="chatAdminSection">
+        <h2>访客留言与在线交流管理</h2>
+        <p>查看访客留言并以邻伊管理员身份回复。仅处理网站使用、科普内容建议和资料反馈，不进行诊疗咨询。</p>
+        <div class="admin-toolbar"><button id="refreshChats" class="btn btn-outline" type="button">刷新会话</button><span id="chatAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
+        <div class="chat-admin-layout">
+          <div class="chat-admin-list"><h3>访客会话</h3><div id="chatConversationList" class="chat-conversation-list">正在加载…</div></div>
+          <div class="chat-admin-detail">
+            <h3 id="chatAdminTitle">选择一个会话</h3>
+            <div id="chatAdminMessages" class="chat-messages chat-admin-messages"><div class="chat-empty">选择左侧访客会话后，这里会显示交流内容。</div></div>
+            <form id="chatAdminReplyForm" class="visitor-chat-form" hidden>
+              <textarea id="chatAdminReply" rows="3" maxlength="1200" placeholder="输入给访客的回复…" required></textarea>
+              <div class="chat-compose-bottom"><small>仅回复非诊疗类内容</small><button id="chatAdminSend" class="btn btn-primary" type="submit">发送回复</button><button id="chatAdminClose" class="btn btn-outline" type="button">结束会话</button></div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-card analytics-admin-card" id="siteAnalyticsSection">
         <h2>访客数据中心</h2>
         <p>仅记录匿名访客标识、页面路径和访问时间，不记录 IP、姓名或搜索内容。访客主动发来的在线交流内容可在下方会话管理中查看。</p>
         <div class="analytics-summary" aria-live="polite">
@@ -106,42 +126,9 @@
         </div>
       </section>
 
-      <section class="admin-card" id="chatAdminSection">
-        <h2>访客留言与在线交流管理</h2>
-        <p>查看访客留言并以邻伊管理员身份回复。仅处理网站使用、科普内容建议和资料反馈，不进行诊疗咨询。</p>
-        <div class="admin-toolbar"><button id="refreshChats" class="btn btn-outline" type="button">刷新会话</button><span id="chatAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
-        <div class="chat-admin-layout">
-          <div class="chat-admin-list"><h3>访客会话</h3><div id="chatConversationList" class="chat-conversation-list">正在加载…</div></div>
-          <div class="chat-admin-detail">
-            <h3 id="chatAdminTitle">选择一个会话</h3>
-            <div id="chatAdminMessages" class="chat-messages chat-admin-messages"><div class="chat-empty">选择左侧访客会话后，这里会显示交流内容。</div></div>
-            <form id="chatAdminReplyForm" class="visitor-chat-form" hidden>
-              <textarea id="chatAdminReply" rows="3" maxlength="1200" placeholder="输入给访客的回复…" required></textarea>
-              <div class="chat-compose-bottom"><small>仅回复非诊疗类内容</small><button id="chatAdminSend" class="btn btn-primary" type="submit">发送回复</button><button id="chatAdminClose" class="btn btn-outline" type="button">结束会话</button></div>
-            </form>
-          </div>
-        </div>
-      </section>
 
-      <section class="admin-card" id="aiArticleSection">
-        <h2>AI 科普文章管理</h2>
-        <p>输入主题生成草稿，编辑确认后手动发布。未发布内容仅管理员可见。</p>
-        <div class="admin-form" style="max-width:760px">
-          <label>文章主题<input id="aiArticleTopic" type="text" maxlength="300" placeholder="例如：AMH 检查是什么？"></label>
-          <button id="generateAiArticle" class="btn btn-primary" type="button">生成文章草稿</button>
-        </div>
-        <p id="aiArticleMessage" class="notice" role="status" aria-live="polite"></p>
-        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>文章</th><th>操作</th></tr></thead><tbody id="aiArticleRows"></tbody></table></div>
-        <div id="aiArticleEditor" hidden style="margin-top:22px">
-          <h3>编辑文章</h3>
-          <div class="admin-form" style="max-width:900px">
-            <label>标题<input id="aiArticleTitle" maxlength="200"></label>
-            <label>摘要<textarea id="aiArticleSummary" rows="3"></textarea></label>
-            <label>正文<textarea id="aiArticleContent" rows="18"></textarea></label>
-            <div class="admin-toolbar"><button id="saveAiArticle" class="btn btn-outline" type="button">保存草稿</button><button id="publishAiArticle" class="btn btn-primary" type="button">手动发布</button></div>
-          </div>
-        </div>
-      </section>
+
+
     </section>
   </main>
 
