@@ -128,10 +128,9 @@ export default {
           },
           ...messages
         ],
-        // GLM-4.7-Flash supports thinking mode. Disable it for this short
-        // website Q&A flow so the output budget is spent on the user-facing answer.
-        chat_template_kwargs: { enable_thinking: false },
-        max_tokens: 768,
+        // Keep the request close to Cloudflare's documented minimal GLM example.
+        // max_completion_tokens is the current parameter; max_tokens is deprecated.
+        max_completion_tokens: 768,
         temperature: 0.4
       });
 
@@ -158,18 +157,28 @@ export default {
 
       return json({ answer: answer.slice(0, 12000) }, 200, headers);
     } catch (error) {
-      const message = String(error && error.message || "");
+      const message = String(error && error.message || "Unknown Workers AI error");
+      const errorName = String(error?.name || "Error");
       console.error("model_call_failed", {
-        name: error?.name || "Error",
+        name: errorName,
         message: message.slice(0, 500),
         stack: String(error?.stack || "").slice(0, 1200)
       });
-      const quota = /quota|limit|neurons|billing|exceed/i.test(message);
+
+      const quota = /quota|daily free allocation|neurons|billing|exceed|account limited/i.test(message);
+      const capacity = /capacity|busy|overloaded|temporarily unavailable/i.test(message);
+      const status = quota ? 429 : capacity ? 503 : 502;
+      const userMessage = quota
+        ? "Workers AI 免费额度可能已用完。请等待额度重置；不会切换到付费服务。"
+        : capacity
+          ? "Workers AI 当前容量不足或暂时不可用，请稍后重试。"
+          : "Workers AI 调用失败：" + message.replace(/[\\r\\n]+/g, " ").slice(0, 240);
+
       return json({
-        error: quota
-          ? "今日免费 AI 使用额度可能已用完，请等待额度重置后再试。不会自动切换到付费服务。"
-          : "AI 服务暂时不可用，请稍后重试。"
-      }, quota ? 429 : 503, headers);
+        error: userMessage,
+        code: quota ? "AI_QUOTA_LIMIT" : capacity ? "AI_CAPACITY_UNAVAILABLE" : "AI_RUNTIME_ERROR",
+        model: MODEL
+      }, status, headers);
     }
   }
 };
