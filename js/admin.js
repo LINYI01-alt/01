@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     showDashboard(user);
     await loadSubmissions();
+    if (typeof window.loadLinyiAdminChats === "function") await window.loadLinyiAdminChats();
     if (typeof window.loadLinyiSiteAnalytics === "function") await window.loadLinyiSiteAnalytics();
     return true;
   }
@@ -255,65 +256,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.loadLinyiSiteAnalytics = loadSiteAnalytics;
   }
 
-  // AI 科普文章草稿管理
-  const articleBox = document.getElementById("aiArticleSection");
-  if (articleBox) {
-    const topicInput=document.getElementById("aiArticleTopic");
-    const generateBtn=document.getElementById("generateAiArticle");
-    const articleRows=document.getElementById("aiArticleRows");
-    const articleMessage=document.getElementById("aiArticleMessage");
-    const editor=document.getElementById("aiArticleEditor");
-    const titleInput=document.getElementById("aiArticleTitle");
-    const summaryInput=document.getElementById("aiArticleSummary");
-    const contentInput=document.getElementById("aiArticleContent");
-    const saveBtn=document.getElementById("saveAiArticle");
-    const publishBtn=document.getElementById("publishAiArticle");
-    let currentArticleId=null;
-    const articleNotice=(s,kind="")=>{articleMessage.textContent=s;articleMessage.className="notice "+kind;};
-    async function loadAiArticles(){
-      const {data,error}=await client.from("ai_article_drafts").select("*").order("created_at",{ascending:false});
-      if(error){articleNotice("文章读取失败："+error.message,"error");return;}
-      articleRows.replaceChildren();
-      for(const item of data||[]){
-        const tr=document.createElement("tr"),td=document.createElement("td"),title=document.createElement("strong");
-        title.textContent=item.title;td.appendChild(title);
-        const state=document.createElement("small");state.textContent=item.status==="published"?"已发布":"草稿";td.appendChild(state);
-        const action=document.createElement("td"),edit=document.createElement("button");edit.type="button";edit.className="small-button";edit.textContent="编辑";
-        edit.addEventListener("click",()=>{currentArticleId=item.id;titleInput.value=item.title;summaryInput.value=item.summary||"";contentInput.value=item.content;editor.hidden=false;publishBtn.hidden=item.status==="published";articleNotice("正在编辑："+item.title);});
-        action.appendChild(edit);tr.append(td,action);articleRows.appendChild(tr);
-      }
-      articleNotice("已加载 "+(data||[]).length+" 篇文章。");
-    }
-    generateBtn.addEventListener("click",async()=>{
-      const topic=topicInput.value.trim();if(!topic){articleNotice("请先填写文章主题。","error");return;}
-      generateBtn.disabled=true;articleNotice("GPT 正在生成文章，请稍候…");
-      try{
-        const {data:{session}}=await client.auth.getSession();if(!session)throw new Error("登录已失效，请重新登录。");
-        const response=await fetch(window.LINYI_SUPABASE_URL+"/functions/v1/linyi-ai",{method:"POST",headers:{"Content-Type":"application/json","apikey":window.LINYI_SUPABASE_PUBLISHABLE_KEY,"Authorization":"Bearer "+session.access_token},body:JSON.stringify({action:"generate_article",topic})});
-        const result=await response.json();if(!response.ok)throw new Error(result.error||"生成失败。");
-        const item=result.draft;currentArticleId=item.id;titleInput.value=item.title;summaryInput.value=item.summary||"";contentInput.value=item.content;editor.hidden=false;publishBtn.hidden=false;articleNotice("文章已生成并保存为草稿，尚未公开。","success");await loadAiArticles();
-      }catch(error){articleNotice(error.message,"error");}
-      finally{generateBtn.disabled=false;}
-    });
-    saveBtn.addEventListener("click",async()=>{
-      if(!currentArticleId){articleNotice("请先选择或生成一篇文章。","error");return;}
-      saveBtn.disabled=true;articleNotice("正在保存为草稿…");
-      const {error}=await client.from("ai_article_drafts").update({title:titleInput.value.trim(),summary:summaryInput.value.trim(),content:contentInput.value,status:"draft",published_at:null,updated_at:new Date().toISOString()}).eq("id",currentArticleId);
-      saveBtn.disabled=false;if(error){articleNotice("保存失败："+error.message,"error");return;}
-      articleNotice("已保存为草稿，未公开。","success");await loadAiArticles();
-    });
-    publishBtn.addEventListener("click",async()=>{
-      if(!currentArticleId)return;
-      if(!confirm("确认发布这篇文章？发布后访客可以阅读。"))return;
-      publishBtn.disabled=true;
-      const {error}=await client.from("ai_article_drafts").update({title:titleInput.value.trim(),summary:summaryInput.value.trim(),content:contentInput.value,status:"published",published_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",currentArticleId);
-      publishBtn.disabled=false;if(error){articleNotice("发布失败："+error.message,"error");return;}
-      articleNotice("文章已发布。","success");await loadAiArticles();
-    });
-    loadAiArticles();
-  }
-
-
   // 在线交流：管理员查看访客会话并回复
   const chatAdminSection = document.getElementById("chatAdminSection");
   if (chatAdminSection) {
@@ -405,13 +347,18 @@ document.addEventListener("DOMContentLoaded", () => {
       title.textContent = (activeConversation.subject || "网站内容交流") + " · 已结束";
       await loadChatList(); chatNotice("会话已结束。", "success");
     });
-    loadChatList();
-    adminChatChannel = client.channel("admin-chat-updates")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, async payload => {
-        await loadChatList();
-        if (activeConversation && payload.new.conversation_id === activeConversation.id) await loadChatMessages();
-      })
-      .subscribe();
+    let chatAdminStarted = false;
+    window.loadLinyiAdminChats = async function () {
+      if (chatAdminStarted) return;
+      chatAdminStarted = true;
+      await loadChatList();
+      adminChatChannel = client.channel("admin-chat-updates")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages" }, async payload => {
+          await loadChatList();
+          if (activeConversation && payload.new.conversation_id === activeConversation.id) await loadChatMessages();
+        })
+        .subscribe();
+    };
   }
 
 
