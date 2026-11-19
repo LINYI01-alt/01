@@ -70,7 +70,12 @@ export default {
     // A lightweight endpoint to verify that this exact Worker deployment is reachable.
     if (request.method === "GET" && (url.pathname === "/health" || url.pathname === "/")) {
       if (origin && origin !== ALLOWED_ORIGIN) return json({ error: "请求来源不受支持。" }, 403, headers);
-      return json({ ok: true, service: "linyi-ai-gateway", model: MODEL }, 200, headers);
+      return json({
+        ok: true,
+        service: "linyi-ai-gateway",
+        model: MODEL,
+        aiBindingAvailable: !!(env.AI && typeof env.AI.run === "function")
+      }, 200, headers);
     }
 
     if (origin !== ALLOWED_ORIGIN) {
@@ -128,8 +133,8 @@ export default {
           },
           ...messages
         ],
-        // Keep the request close to Cloudflare's documented minimal GLM example.
-        // max_completion_tokens is the current parameter; max_tokens is deprecated.
+        // This model enables reasoning by default; disable it for short direct answers.
+        chat_template_kwargs: { enable_thinking: false },
         max_completion_tokens: 768,
         temperature: 0.4
       });
