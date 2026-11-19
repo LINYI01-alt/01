@@ -1,5 +1,53 @@
 // 邻伊网站 交互脚本
 document.addEventListener('DOMContentLoaded', function () {
+  // 多语言翻译：通过 Google 网站翻译为页面文字提供实际翻译能力。
+  const languagePicker = document.getElementById('siteLanguage');
+  if (languagePicker) {
+    const translateHost = document.createElement('div');
+    translateHost.id = 'google_translate_element';
+    translateHost.setAttribute('aria-hidden', 'true');
+    translateHost.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;';
+    document.body.appendChild(translateHost);
+
+    window.googleTranslateElementInit = function () {
+      if (window.google && google.translate && google.translate.TranslateElement) {
+        new google.translate.TranslateElement({
+          pageLanguage: 'zh-CN',
+          includedLanguages: 'zh-TW,en,ja,ko,fr,de,es,pt,ru',
+          autoDisplay: false
+        }, 'google_translate_element');
+      }
+    };
+
+    const translateScript = document.createElement('script');
+    translateScript.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    translateScript.async = true;
+    document.head.appendChild(translateScript);
+
+    languagePicker.addEventListener('change', function () {
+      const targetLanguage = this.value;
+      if (targetLanguage === 'zh-CN') {
+        // 恢复原始简体中文页面。
+        document.cookie = 'googtrans=/zh-CN/zh-CN;path=/';
+        document.cookie = 'googtrans=/zh-CN/zh-CN;path=/;domain=' + location.hostname;
+        location.reload();
+        return;
+      }
+      let attempts = 0;
+      const chooseTranslation = function () {
+        const googlePicker = document.querySelector('.goog-te-combo');
+        if (googlePicker) {
+          googlePicker.value = targetLanguage;
+          googlePicker.dispatchEvent(new Event('change', { bubbles: true }));
+        } else if (attempts++ < 30) {
+          window.setTimeout(chooseTranslation, 300);
+        } else {
+          console.warn('网页翻译组件暂不可用，请检查网络后重试。');
+        }
+      };
+      chooseTranslation();
+    });
+  }
   // 移动端菜单
   const toggle = document.getElementById('menuToggle');
   const nav = document.getElementById('mainNav');
