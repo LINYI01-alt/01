@@ -101,8 +101,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // 邻伊 AI 科普助手：所有页面统一加载
 (function initLinyiAI() {
-  const SUPABASE_URL = "https://rhmoeecrznpkhtkoktng.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_rKZZQZ5ULF11IcXyWHggmg_CX24p7od";
+  const CLOUDFLARE_AI_URL = "https://linyi-ai-gateway.www-linyi0101-201.workers.dev/";
   if (document.getElementById("linyi-ai-launcher")) return;
 
   const style = document.createElement("style");
@@ -182,11 +181,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const waiting = addMessage("正在思考…", "bot");
 
     try {
-      const response = await fetch(SUPABASE_URL + "/functions/v1/linyi-ai", {
+      const response = await fetch(CLOUDFLARE_AI_URL, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "apikey": SUPABASE_KEY
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({ action: "chat", messages: history })
       });
