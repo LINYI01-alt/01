@@ -183,15 +183,32 @@ document.addEventListener('DOMContentLoaded', function () {
     try {
       const response = await fetch(CLOUDFLARE_AI_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "chat", messages: history })
       });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "暂时无法回答，请稍后重试。");
-      waiting.textContent = result.answer || "暂时没有得到回答。";
-      history.push({ role: "assistant", content: waiting.textContent });
+
+      // Read once as text so invalid JSON and empty bodies are diagnosable.
+      const raw = await response.text();
+      let result;
+      try {
+        result = raw ? JSON.parse(raw) : null;
+      } catch (_) {
+        throw new Error("AI 网关返回了非 JSON 内容（HTTP " + response.status + "）。请检查 Cloudflare Worker 部署版本。");
+      }
+
+      if (!response.ok) {
+        const detail = result && typeof result.error === "string" ? result.error : "网关请求失败";
+        throw new Error(detail + "（HTTP " + response.status + "）");
+      }
+
+      const answer = result && typeof result.answer === "string" ? result.answer.trim() : "";
+      if (!answer) {
+        const keys = result && typeof result === "object" ? Object.keys(result).join(", ") : "无 JSON 对象";
+        throw new Error("AI 网关返回 HTTP " + response.status + "，但 answer 为空。响应字段：" + keys + "。这通常表示 Cloudflare 仍运行旧版 Worker，或模型结果解析失败。");
+      }
+
+      waiting.textContent = answer;
+      history.push({ role: "assistant", content: answer });
       if (history.length > 12) history.splice(0, 2);
     } catch (error) {
       waiting.textContent = error.message || "连接失败，请稍后重试。";
