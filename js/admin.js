@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     showDashboard(user);
     await loadSubmissions();
+    if (typeof window.loadLinyiSiteAnalytics === "function") await window.loadLinyiSiteAnalytics();
     return true;
   }
 
@@ -251,7 +252,7 @@ document.addEventListener("DOMContentLoaded", () => {
       setAnalyticsNotice("统计已更新。累计最多显示最近 10,000 次页面浏览记录；访客数按浏览器匿名标识估算。", "success");
     }
     document.getElementById("refreshAnalytics").addEventListener("click", loadSiteAnalytics);
-    loadSiteAnalytics();
+    window.loadLinyiSiteAnalytics = loadSiteAnalytics;
   }
 
   // AI 科普文章草稿管理
