@@ -83,9 +83,22 @@ export default {
         temperature: 0.4
       });
 
-      const answer = typeof result === "string"
-        ? result
-        : (result && (result.response || result.result || result.output_text)) || "";
+      // GLM-4.7-Flash may return an OpenAI-compatible chat completion:
+      // { choices: [{ message: { content: "..." } }] }.
+      // Keep compatibility with other Workers AI response shapes too.
+      let answer = "";
+      if (typeof result === "string") {
+        answer = result;
+      } else if (result && Array.isArray(result.choices)) {
+        const content = result.choices[0]?.message?.content;
+        answer = typeof content === "string"
+          ? content
+          : Array.isArray(content)
+            ? content.map(part => part?.text || "").join("")
+            : "";
+      } else if (result) {
+        answer = result.response || result.result || result.output_text || "";
+      }
       if (!answer) {
         return json({ error: "暂时没有得到回答，请稍后重试。" }, 503, headers);
       }
