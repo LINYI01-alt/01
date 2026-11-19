@@ -12,12 +12,14 @@
     /* 语言选择框：缩窄尺寸、加粗放大文字，并与“首页”文字垂直对齐 */
     .language-nav-item {
       align-items: center;
+      align-self: center;
     }
     .site-language-select {
-      width: 100px;
-      max-width: 100px;
-      height: 42px;
-      min-height: 42px;
+      box-sizing: border-box;
+      width: 119px; /* 比原来加长约 5 毫米 */
+      max-width: 119px;
+      height: 36px;
+      min-height: 36px;
       padding: 5px 22px 5px 9px;
       border: 1px solid #dfb5a2;
       border-radius: 8px;
@@ -29,10 +31,10 @@
     }
     @media (max-width: 900px) {
       .site-language-select {
-        width: 100px;
-        max-width: 100px;
-        height: 40px;
-        min-height: 40px;
+        width: 119px;
+        max-width: 119px;
+        height: 36px;
+        min-height: 36px;
       }
     }
   </style>
