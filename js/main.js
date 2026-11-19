@@ -303,7 +303,6 @@ document.addEventListener('DOMContentLoaded', function () {
       headers: {
         "Content-Type": "application/json",
         "apikey": "sb_publishable_rKZZQZ5ULF11IcXyWHggmg_CX24p7od",
-        "Authorization": "Bearer sb_publishable_rKZZQZ5ULF11IcXyWHggmg_CX24p7od",
         "Prefer": "return=minimal"
       },
       body: JSON.stringify({ visitor_key: visitorKey, page_path: pagePath }),
