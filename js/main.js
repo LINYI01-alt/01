@@ -77,24 +77,34 @@ document.addEventListener('DOMContentLoaded', function () {
   const searchInput = document.getElementById('siteSearchInput');
   const searchResults = document.getElementById('siteSearchResults');
   const knowledgeIndex = [
-    {title:'IVF 基础知识：体外受精是什么？',desc:'了解体外受精与胚胎移植的基本概念。',url:'pages/kepu.html#ivf',keys:'IVF 试管婴儿 体外受精 胚胎移植'},
-    {title:'促排卵基础知识',desc:'了解促排卵的目的、监测概念与用药边界。',url:'pages/kepu.html#cui-pai',keys:'促排卵 促排 卵泡 药物 监测'},
-    {title:'取卵与受精过程',desc:'了解取卵、受精和实验室环节的基本概念。',url:'pages/kepu.html#quluan',keys:'取卵 受精 取精 实验室'},
-    {title:'胚胎培养与移植科普',desc:'了解胚胎培养、评估和移植的概念。',url:'pages/kepu.html#peitai',keys:'胚胎 培养 移植 囊胚 冻胚'},
-    {title:'冻胚与冻卵知识',desc:'了解冻胚、冻卵保存对象和流程差异。',url:'pages/kepu.html#dongluan',keys:'冻胚 冻卵 冷冻 保存 生育力'},
-    {title:'辅助生殖伦理与风险',desc:'了解知情同意、机构资质、隐私与风险。',url:'pages/kepu.html#lunli',keys:'伦理 风险 隐私 资质 知情同意'},
-    {title:'常见检查解读',desc:'了解 AMH、超声及男性相关检查的基础概念。',url:'pages/kepu.html#jiancha',keys:'AMH 检查 报告 卵巢储备 精液'},
-    {title:'年龄与生育力',desc:'了解年龄与生育力变化的基本知识。',url:'pages/kepu.html#nianling',keys:'年龄 生育力 卵巢储备'},
-    {title:'反复种植失败（RIF）',desc:'了解 RIF 的定义、可能因素和系统评估思路。',url:'pages/faq.html#shibai',keys:'RIF 反复种植失败 反复移植失败 未着床'},
-    {title:'常见问题问答',desc:'按分类浏览辅助生殖和生育健康高频问题。',url:'pages/faq.html',keys:'FAQ 常见问题 问答'},
-    {title:'在线交流与服务边界',desc:'了解邻伊的非诊疗服务范围与隐私提醒。',url:'pages/jiaoliu.html',keys:'在线交流 反馈 隐私 服务'}
+    {title:'生育基础认知',desc:'了解自然受孕过程、生育力相关因素与何时寻求专业评估。',url:'pages/kepu.html#jichu',keys:'生育基础 自然受孕 受孕过程 生育力 不孕 不孕症'},
+    {title:'身体与备孕',desc:'了解备孕期间的身体准备、双方参与和生活节奏。',url:'pages/kepu.html#beiyun',keys:'备孕 备孕准备 孕前准备 身体准备 夫妻 双方'},
+    {title:'常见检查解读：AMH与卵巢储备',desc:'认识AMH、超声、卵巢储备及男性生育相关检查。',url:'pages/kepu.html#jiancha',keys:'AMH 抗缪勒管激素 卵巢储备 卵巢功能 检查 报告 超声 精液分析 精子'},
+    {title:'年龄与生育力',desc:'了解年龄与女性、男性生育力相关因素。',url:'pages/kepu.html#nianling',keys:'年龄 生育力 女性年龄 卵巢储备 高龄生育'},
+    {title:'生活方式与生育',desc:'了解睡眠、饮食、运动、烟酒与压力等生活方式因素。',url:'pages/kepu.html#shenghuo',keys:'生活方式 饮食 睡眠 运动 压力 吸烟 饮酒 生育健康'},
+    {title:'心理与情绪管理',desc:'了解备孕和辅助生殖过程中的常见情绪体验与支持方式。',url:'pages/kepu.html#xinli',keys:'心理 情绪 焦虑 压力 心理支持 备孕情绪'},
+    {title:'IVF基础知识：体外受精与试管婴儿',desc:'了解IVF、体外受精与胚胎移植的基本概念。',url:'pages/kepu.html#ivf',keys:'IVF 试管婴儿 体外受精 体外受精胚胎移植 ART 辅助生殖'},
+    {title:'促排卵基础知识',desc:'了解促排卵的目的、卵泡监测概念与用药边界。',url:'pages/kepu.html#cui-pai',keys:'促排卵 促排 卵泡 药物 监测 控制性卵巢刺激'},
+    {title:'取卵与受精过程',desc:'了解取卵、取精、受精和实验室环节的基本概念。',url:'pages/kepu.html#quluan',keys:'取卵 受精 取精 实验室 卵子 精子 ICSI'},
+    {title:'胚胎培养与移植科普',desc:'了解胚胎培养、囊胚、胚胎评估和移植的概念。',url:'pages/kepu.html#peitai',keys:'胚胎 培养 移植 囊胚 胚胎等级 冻胚 新鲜移植'},
+    {title:'冻胚与冻卵知识',desc:'了解冻胚、冻卵保存对象和生育力保存的差异。',url:'pages/kepu.html#dongluan',keys:'冻胚 冻卵 冷冻 保存 生育力保存 卵子冷冻 胚胎冷冻'},
+    {title:'辅助生殖伦理与风险',desc:'了解知情同意、机构资质、隐私与医疗风险。',url:'pages/kepu.html#lunli',keys:'伦理 风险 隐私 资质 知情同意 法律 规范'},
+    {title:'辅助生殖技术专题解读',desc:'了解人工授精、IVF及相关辅助生殖技术概念。',url:'pages/zhuanti.html#fuzhu',keys:'辅助生殖技术 人工授精 IUI IVF ICSI'},
+    {title:'不同年龄段的生育力关注点',desc:'按年龄阶段了解生育规划相关知识。',url:'pages/zhuanti.html#nianling',keys:'年龄 生育力 高龄 备孕 生育规划'},
+    {title:'检查报告怎么看',desc:'了解常见生育检查报告的阅读思路与局限。',url:'pages/zhuanti.html#baogao',keys:'检查报告 AMH 激素 卵巢储备 超声 精液'},
+    {title:'试管婴儿治疗周期全流程',desc:'了解辅助生殖治疗周期各阶段的概念与时间不确定性。',url:'pages/zhuanti.html#zhouqi',keys:'试管婴儿流程 IVF流程 治疗周期 促排 取卵 移植'},
+    {title:'冻卵与生育力保存专题',desc:'了解卵子冷冻、生育力保存的现实限制与知情选择。',url:'pages/zhuanti.html#dongluan',keys:'冻卵 卵子冷冻 生育力保存 冷冻保存'},
+    {title:'辅助生殖常见误区澄清',desc:'辨别成功率、偏方、检查结果与网络经验中的常见误区。',url:'pages/zhuanti.html#wuqu',keys:'辅助生殖误区 成功率 偏方 IVF成功率'},
+    {title:'反复种植失败（RIF）',desc:'了解RIF的定义、可能因素和系统评估思路。',url:'pages/faq.html#faq-repeat-failure',keys:'RIF 反复种植失败 反复移植失败 未着床 胚胎移植失败'},
+    {title:'常见问题问答',desc:'按分类浏览IVF、AMH、促排卵、胚胎移植等高频问题。',url:'pages/faq.html',keys:'FAQ 常见问题 问答 试管婴儿'},
+    {title:'在线交流与服务边界',desc:'了解邻伊的非诊疗服务范围与隐私提醒。',url:'pages/jiaoliu.html',keys:'在线交流 反馈 隐私 服务范围'}
   ];
   function runSiteSearch(value) {
     if (!searchResults) return;
     const query = (value || '').trim().toLowerCase();
     searchResults.textContent = '';
     if (!query) { searchResults.textContent = '请输入关键词，例如 IVF、AMH、反复种植失败或胚胎培养。'; return; }
-    const terms = query.split(/\\s+/).filter(Boolean);
+    const terms = query.split(/\s+/).filter(Boolean);
     const matches = knowledgeIndex.filter(item => terms.some(term => (item.title+' '+item.desc+' '+item.keys).toLowerCase().includes(term)));
 
     const heading = document.createElement('h3');
