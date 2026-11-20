@@ -142,7 +142,17 @@ document.addEventListener('DOMContentLoaded', function () {
     searchResults.appendChild(note);
   }
   if (searchForm && searchInput) {
-    searchForm.addEventListener('submit', function(e){ e.preventDefault(); runSiteSearch(searchInput.value); });
+    // 点击搜索或按回车：在新标签页直接打开 Google 全网结果，不依赖本站是否收录该问题。
+    searchForm.action = 'https://www.google.com/search';
+    searchForm.method = 'get';
+    searchForm.target = '_blank';
+    searchInput.name = 'q';
+    const languageParam = document.createElement('input');
+    languageParam.type = 'hidden';
+    languageParam.name = 'hl';
+    languageParam.value = 'zh-CN';
+    searchForm.appendChild(languageParam);
+    searchForm.addEventListener('submit', function(){ runSiteSearch(searchInput.value); });
     searchInput.addEventListener('input', function(){ if (searchInput.value.trim().length >= 2) runSiteSearch(searchInput.value); else if(searchResults) searchResults.textContent=''; });
   }
 
