@@ -1273,3 +1273,16 @@ img {
 /* 管理员入口：主页首屏始终可见，避免移动端导航折叠后找不到 */
 .home-hero-actions .home-admin-entry{display:inline-flex!important;align-items:center;justify-content:center;gap:8px;background:#315b49!important;color:#fff!important;border:1px solid #315b49!important;opacity:1!important;visibility:visible!important;font-weight:700;min-height:48px;padding:12px 22px;border-radius:999px;text-decoration:none;position:relative;z-index:2}
 .home-hero-actions .home-admin-entry:hover{background:#244638!important;color:#fff!important;transform:translateY(-1px)}
+
+
+/* 首页学习路线：按用户提供的图片设置前两张主题卡片背景 */
+.home-directory-grid .home-service-card:nth-child(1) {
+  background-image: url("https://images.pexels.com/photos/41073/pexels-photo-41073.jpeg");
+  background-size: cover;
+  background-position: center 46%;
+}
+.home-directory-grid .home-service-card:nth-child(2) {
+  background-image: url("https://images.pexels.com/photos/3863252/pexels-photo-3863252.jpeg");
+  background-size: cover;
+  background-position: center 52%;
+}
