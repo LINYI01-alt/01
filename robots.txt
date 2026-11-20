@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://linyi01-alt.github.io/01/sitemap.xml
