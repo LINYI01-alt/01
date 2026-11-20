@@ -1307,3 +1307,12 @@ img {
   background-size: cover !important;
   background-position: center 48% !important;
 }
+
+
+/* 修复：前两张学习路线卡片的图片被 learning-home-grid 的背景渐变覆盖 */
+.home-directory-grid.learning-home-grid .home-service-card:nth-child(1) {
+  background: linear-gradient(180deg, rgba(20,38,30,.04) 8%, rgba(20,38,30,.78) 100%), url("https://images.pexels.com/photos/41073/pexels-photo-41073.jpeg") center 46% / cover no-repeat !important;
+}
+.home-directory-grid.learning-home-grid .home-service-card:nth-child(2) {
+  background: linear-gradient(180deg, rgba(20,38,30,.04) 8%, rgba(20,38,30,.78) 100%), url("https://images.pexels.com/photos/3863252/pexels-photo-3863252.jpeg") center 52% / cover no-repeat !important;
+}
