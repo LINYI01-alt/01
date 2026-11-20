@@ -1286,3 +1286,16 @@ img {
   background-size: cover;
   background-position: center 52%;
 }
+
+
+/* 首页学习路线：补充用户提供的第3、4张主题配图 */
+.home-directory-grid .home-service-card:nth-child(3) {
+  background-image: linear-gradient(180deg, rgba(20,38,30,.08) 10%, rgba(20,38,30,.78) 100%), url("https://images.pexels.com/photos/10258754/pexels-photo-10258754.jpeg") !important;
+  background-size: cover !important;
+  background-position: center 42% !important;
+}
+.home-directory-grid .home-service-card:nth-child(4) {
+  background-image: linear-gradient(180deg, rgba(20,38,30,.08) 10%, rgba(20,38,30,.78) 100%), url("https://images.pexels.com/photos/12744962/pexels-photo-12744962.jpeg") !important;
+  background-size: cover !important;
+  background-position: center 44% !important;
+}
