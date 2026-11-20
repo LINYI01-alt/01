@@ -142,17 +142,25 @@ document.addEventListener('DOMContentLoaded', function () {
     searchResults.appendChild(note);
   }
   if (searchForm && searchInput) {
-    // 点击搜索或按回车：在新标签页直接打开 Google 全网结果，不依赖本站是否收录该问题。
-    searchForm.action = 'https://www.google.com/search';
+    const enginePicker = document.getElementById('siteSearchEngine');
+    const engines = {
+      baidu: { action: 'https://www.baidu.com/s', field: 'wd' },
+      bing: { action: 'https://cn.bing.com/search', field: 'q' },
+      '360': { action: 'https://www.so.com/s', field: 'q' },
+      sogou: { action: 'https://www.sogou.com/web', field: 'query' },
+      google: { action: 'https://www.google.com/search', field: 'q' },
+      pubmed: { action: 'https://pubmed.ncbi.nlm.nih.gov/', field: 'term' }
+    };
     searchForm.method = 'get';
     searchForm.target = '_blank';
-    searchInput.name = 'q';
-    const languageParam = document.createElement('input');
-    languageParam.type = 'hidden';
-    languageParam.name = 'hl';
-    languageParam.value = 'zh-CN';
-    searchForm.appendChild(languageParam);
-    searchForm.addEventListener('submit', function(){ runSiteSearch(searchInput.value); });
+    function setSearchEngine() {
+      const engine = engines[enginePicker ? enginePicker.value : 'baidu'] || engines.baidu;
+      searchForm.action = engine.action;
+      searchInput.name = engine.field;
+    }
+    if (enginePicker) enginePicker.addEventListener('change', setSearchEngine);
+    setSearchEngine();
+    searchForm.addEventListener('submit', function(){ setSearchEngine(); runSiteSearch(searchInput.value); });
     searchInput.addEventListener('input', function(){ if (searchInput.value.trim().length >= 2) runSiteSearch(searchInput.value); else if(searchResults) searchResults.textContent=''; });
   }
 
