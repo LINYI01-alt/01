@@ -2,12 +2,14 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://linyi01-alt.github.io/01/</loc>
+    <lastmod>2026-11-20</lastmod>
   </url>
   <url>
     <loc>https://linyi01-alt.github.io/01/pages/about.html</loc>
   </url>
   <url>
     <loc>https://linyi01-alt.github.io/01/pages/faq.html</loc>
+    <lastmod>2026-11-20</lastmod>
   </url>
   <url>
     <loc>https://linyi01-alt.github.io/01/pages/fenxiang.html</loc>
@@ -17,8 +19,10 @@
   </url>
   <url>
     <loc>https://linyi01-alt.github.io/01/pages/kepu.html</loc>
+    <lastmod>2026-11-20</lastmod>
   </url>
   <url>
     <loc>https://linyi01-alt.github.io/01/pages/zhuanti.html</loc>
+    <lastmod>2026-11-20</lastmod>
   </url>
 </urlset>
