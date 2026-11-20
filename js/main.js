@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 
-  // 首页站内搜索：仅在浏览器本地匹配，不上传搜索词。
+  // 首页综合搜索：先匹配本站内容，同时提供全网网页、医学文献和专业指南搜索入口。
   const searchForm = document.getElementById('siteSearchForm');
   const searchInput = document.getElementById('siteSearchInput');
   const searchResults = document.getElementById('siteSearchResults');
@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
     {title:'辅助生殖伦理与风险',desc:'了解知情同意、机构资质、隐私与风险。',url:'pages/kepu.html#lunli',keys:'伦理 风险 隐私 资质 知情同意'},
     {title:'常见检查解读',desc:'了解 AMH、超声及男性相关检查的基础概念。',url:'pages/kepu.html#jiancha',keys:'AMH 检查 报告 卵巢储备 精液'},
     {title:'年龄与生育力',desc:'了解年龄与生育力变化的基本知识。',url:'pages/kepu.html#nianling',keys:'年龄 生育力 卵巢储备'},
+    {title:'反复种植失败（RIF）',desc:'了解 RIF 的定义、可能因素和系统评估思路。',url:'pages/faq.html#shibai',keys:'RIF 反复种植失败 反复移植失败 未着床'},
     {title:'常见问题问答',desc:'按分类浏览辅助生殖和生育健康高频问题。',url:'pages/faq.html',keys:'FAQ 常见问题 问答'},
     {title:'在线交流与服务边界',desc:'了解邻伊的非诊疗服务范围与隐私提醒。',url:'pages/jiaoliu.html',keys:'在线交流 反馈 隐私 服务'}
   ];
@@ -92,16 +93,53 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!searchResults) return;
     const query = (value || '').trim().toLowerCase();
     searchResults.textContent = '';
-    if (!query) { searchResults.textContent = '请输入关键词，例如 IVF、AMH、促排卵或胚胎培养。'; return; }
-    const terms = query.split(/\s+/).filter(Boolean);
+    if (!query) { searchResults.textContent = '请输入关键词，例如 IVF、AMH、反复种植失败或胚胎培养。'; return; }
+    const terms = query.split(/\\s+/).filter(Boolean);
     const matches = knowledgeIndex.filter(item => terms.some(term => (item.title+' '+item.desc+' '+item.keys).toLowerCase().includes(term)));
-    if (!matches.length) { searchResults.textContent = '暂未找到相关内容。可以尝试“IVF”“检查”“胚胎”或浏览科普专题。'; return; }
-    matches.forEach(item => {
-      const a = document.createElement('a'); a.className = 'site-search-result'; a.href = item.url;
-      const strong = document.createElement('strong'); strong.textContent = item.title;
+
+    const heading = document.createElement('h3');
+    heading.textContent = '邻伊站内内容';
+    searchResults.appendChild(heading);
+    if (matches.length) {
+      matches.forEach(item => {
+        const a = document.createElement('a'); a.className = 'site-search-result'; a.href = item.url;
+        const strong = document.createElement('strong'); strong.textContent = item.title;
+        const small = document.createElement('small'); small.textContent = item.desc;
+        a.append(strong, small); searchResults.appendChild(a);
+      });
+    } else {
+      const empty = document.createElement('p');
+      empty.textContent = '本站暂时没有匹配的文章。你可以继续使用下面的全网搜索，不必局限于本站。';
+      searchResults.appendChild(empty);
+    }
+
+    const webHeading = document.createElement('h3');
+    webHeading.textContent = '全网搜索与医学资料';
+    webHeading.style.marginTop = '22px';
+    searchResults.appendChild(webHeading);
+    const encoded = encodeURIComponent(value.trim());
+    const guidelineQuery = encodeURIComponent(value.trim() + ' (ASRM OR ESHRE OR HFEA)');
+    const links = [
+      {label:'Google 全网搜索',desc:'搜索互联网网页、医院科普及相关资料。',url:'https://www.google.com/search?q='+encoded+'&hl=zh-CN'},
+      {label:'Bing 全网搜索',desc:'使用另一搜索引擎查找网页和相关内容。',url:'https://www.bing.com/search?q='+encoded},
+      {label:'PubMed 医学文献',desc:'查找生殖医学、妇产科学及辅助生殖研究论文。',url:'https://pubmed.ncbi.nlm.nih.gov/?term='+encoded},
+      {label:'专业机构指南检索',desc:'重点查找 ASRM、ESHRE、HFEA 等专业机构发布的指南和声明。',url:'https://www.google.com/search?q='+guidelineQuery}
+    ];
+    links.forEach(item => {
+      const a = document.createElement('a');
+      a.className = 'site-search-result';
+      a.href = item.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      const strong = document.createElement('strong'); strong.textContent = item.label;
       const small = document.createElement('small'); small.textContent = item.desc;
-      a.append(strong, small); searchResults.appendChild(a);
+      a.append(strong, small);
+      searchResults.appendChild(a);
     });
+    const note = document.createElement('p');
+    note.className = 'search-help';
+    note.textContent = '提示：外部搜索由相应平台提供，搜索词会发送给该平台。医学信息请优先核对专业指南、同行评审研究及正规医疗机构资料；搜索结果不能替代医生诊疗。';
+    searchResults.appendChild(note);
   }
   if (searchForm && searchInput) {
     searchForm.addEventListener('submit', function(e){ e.preventDefault(); runSiteSearch(searchInput.value); });
