@@ -1269,3 +1269,7 @@ img {
 
 /* 首页管理员后台快捷入口 */
 .main-nav > li.nav-admin > a{background:#315b49;color:#fff;font-weight:700;border:1px solid #315b49;white-space:nowrap}.main-nav > li.nav-admin > a:hover{background:#244638;color:#fff;filter:brightness(1.08)}
+
+/* 管理员入口：主页首屏始终可见，避免移动端导航折叠后找不到 */
+.home-hero-actions .home-admin-entry{display:inline-flex!important;align-items:center;justify-content:center;gap:8px;background:#315b49!important;color:#fff!important;border:1px solid #315b49!important;opacity:1!important;visibility:visible!important;font-weight:700;min-height:48px;padding:12px 22px;border-radius:999px;text-decoration:none;position:relative;z-index:2}
+.home-hero-actions .home-admin-entry:hover{background:#244638!important;color:#fff!important;transform:translateY(-1px)}
