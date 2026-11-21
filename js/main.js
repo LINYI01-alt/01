@@ -262,6 +262,17 @@ document.addEventListener('DOMContentLoaded', function () {
   const input = panel.querySelector("#linyi-ai-input");
   const send = form.querySelector("button");
   const history = [];
+  let aiVisitorId = "";
+  try {
+    const visitorKey = "linyi_ai_visitor_id";
+    aiVisitorId = localStorage.getItem(visitorKey) || "";
+    if (!/^[0-9a-f-]{36}$/i.test(aiVisitorId)) {
+      aiVisitorId = crypto.randomUUID();
+      localStorage.setItem(visitorKey, aiVisitorId);
+    }
+  } catch (_) {
+    aiVisitorId = crypto.randomUUID();
+  }
 
   function addMessage(text, role) {
     const p = document.createElement("p");
@@ -301,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function () {
           "Content-Type": "application/json",
           "apikey": window.LINYI_SUPABASE_PUBLISHABLE_KEY
         },
-        body: JSON.stringify({ action: "chat", messages: history })
+        body: JSON.stringify({ action: "chat", messages: history, visitor_id: aiVisitorId })
       });
 
       // Read once as text so invalid JSON and empty bodies are diagnosable.
