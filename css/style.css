@@ -425,40 +425,6 @@ img {
   }
 }
 
-/* WeChat CTA */
-.wechat-cta {
-  background: linear-gradient(135deg, var(--deep-green), #2a5a4e);
-  color: #fff;
-  border-radius: var(--radius);
-  padding: 32px 28px;
-  text-align: center;
-  margin: 28px 0;
-}
-
-.wechat-cta h3 {
-  font-size: 1.4rem;
-  margin-bottom: 10px;
-}
-
-.wechat-cta p {
-  opacity: 0.9;
-  margin-bottom: 20px;
-}
-
-.wechat-box {
-  display: inline-block;
-  background: #fff;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-}
-
-.wechat-tip {
-  margin-top: 12px;
-  font-size: 0.9rem;
-  color: var(--text-light);
-}
-
 /* Article */
 .article-page {
   max-width: 960px;
