@@ -1316,3 +1316,12 @@ img {
 .home-directory-grid.learning-home-grid .home-service-card:nth-child(2) {
   background: linear-gradient(180deg, rgba(20,38,30,.04) 8%, rgba(20,38,30,.78) 100%), url("https://images.pexels.com/photos/3863252/pexels-photo-3863252.jpeg") center 52% / cover no-repeat !important;
 }
+
+
+/* 按用户要求交换试管基础与流程指南配图 */
+.home-directory-grid.learning-home-grid .home-service-card:nth-child(2) {
+  background: linear-gradient(180deg, rgba(20,38,30,.04) 8%, rgba(20,38,30,.78) 100%), url("https://images.pexels.com/photos/13071796/pexels-photo-13071796.jpeg") center 48% / cover no-repeat !important;
+}
+.home-directory-grid.learning-home-grid .home-service-card:nth-child(4) {
+  background: linear-gradient(180deg, rgba(20,38,30,.08) 10%, rgba(20,38,30,.78) 100%), url("https://images.pexels.com/photos/3863252/pexels-photo-3863252.jpeg") center 52% / cover no-repeat !important;
+}
