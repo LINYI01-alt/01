@@ -122,6 +122,7 @@
     let ready = false;
     let connecting = false;
     let connectPromise = null;
+    let lastConnectError = null;
 
     function setNotice(message, isError) {
       notice.textContent = message;
@@ -162,6 +163,7 @@
       if (connectPromise) return connectPromise;
       connecting = true;
       connectPromise = (async () => {
+        lastConnectError = null;
         try {
           await ensureSupabase();
           client = window.linyiCreateSupabaseClient();
@@ -194,7 +196,8 @@
             .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: "conversation_id=eq." + conversationId }, loadMessages)
             .subscribe();
         } catch (error) {
-          console.error("邻伊在线交流连接失败", error);
+          lastConnectError = error;
+          console.error("邻伊在线交流连接失败", { message: error && error.message, code: error && error.code, status: error && error.status, details: error && error.details, hint: error && error.hint });
           status.textContent = "留言服务暂不可用";
           setNotice(error.message || "连接失败，请稍后重试或前往在线交流页面。", true);
           client = null;
@@ -238,7 +241,8 @@
         setNotice("正在重新连接留言服务…");
         await connect();
         if (!ready || !client || !conversationId) {
-          setNotice("暂时无法连接留言服务，请稍后再点一次发送留言。", true);
+          const detail = lastConnectError && lastConnectError.message ? "（" + lastConnectError.message + "）" : "";
+          setNotice("连接失败" + detail + "。请稍后重试；您输入的文字会保留。", true);
           return;
         }
       }
@@ -269,7 +273,7 @@
         setNotice("留言发送成功。");
       } catch (error) {
         console.error("邻伊留言发送失败", error);
-        setNotice("发送失败，请稍后重试。", true);
+        setNotice("发送失败：" + (error && error.message ? error.message : "未知错误"), true);
       } finally {
         send.disabled = !ready;
       }
