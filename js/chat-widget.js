@@ -102,7 +102,7 @@
         <form id="linyi-chat-compose">
           <label for="linyi-chat-input" class="sr-only">输入留言内容</label>
           <textarea id="linyi-chat-input" maxlength="1200" placeholder="请输入您想反馈的内容…" required></textarea>
-          <div id="linyi-chat-compose-bottom"><small><span id="linyi-chat-count">0</span>/1200 字</small><button id="linyi-chat-send" type="submit" disabled>发送留言</button></div>
+          <div id="linyi-chat-compose-bottom"><small><span id="linyi-chat-count">0</span>/1200 字</small><button id="linyi-chat-send" type="submit">发送留言</button></div>
         </form>
         <div id="linyi-chat-privacy">仅处理科普内容、资料反馈和网站使用问题，不提供诊断或治疗建议。请勿填写姓名、电话、身份证号、病历或检查报告。</div>
       </section>`;
@@ -120,6 +120,7 @@
     let conversationId = null;
     let channel = null;
     let ready = false;
+    let connecting = false;
 
     function setNotice(message, isError) {
       notice.textContent = message;
@@ -155,7 +156,8 @@
       messages.scrollTop = messages.scrollHeight;
     }
     async function connect() {
-      if (ready || client) return;
+      if (ready || connecting) return;
+      connecting = true;
       try {
         await ensureSupabase();
         client = window.linyiCreateSupabaseClient();
@@ -191,7 +193,13 @@
         console.error("邻伊在线交流连接失败", error);
         status.textContent = "留言服务暂不可用";
         setNotice(error.message || "连接失败，请稍后重试或前往在线交流页面。", true);
-        send.disabled = true;
+        // Keep the button clickable so visitors can trigger a fresh connection attempt.
+        client = null;
+        conversationId = null;
+        ready = false;
+        send.disabled = false;
+      } finally {
+        connecting = false;
       }
     }
 
@@ -220,7 +228,15 @@
     root.querySelector("#linyi-chat-compose").addEventListener("submit", async event => {
       event.preventDefault();
       const content = input.value.trim();
-      if (!content || !ready || !client || !conversationId) return;
+      if (!content) return;
+      if (!ready || !client || !conversationId) {
+        setNotice("正在重新连接留言服务…");
+        await connect();
+        if (!ready || !client || !conversationId) {
+          setNotice("暂时无法连接留言服务，请稍后再点一次发送留言。", true);
+          return;
+        }
+      }
       if (content.length > 1200) { setNotice("留言请控制在 1200 字以内。", true); return; }
       const hasPhone = /(?:\+?86[- ]?)?1[3-9]\d{9}/.test(content);
       const hasId = /\b[1-9]\d{5}(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])\d{3}[0-9Xx]\b/.test(content);
