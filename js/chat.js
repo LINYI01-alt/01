@@ -13,6 +13,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     notice.textContent = text;
     notice.className = "chat-notice" + (kind ? " " + kind : "");
   };
+  const errorDetail = (error) => {
+    if (!error) return "未知错误";
+    return [error.code, error.message, error.details, error.hint]
+      .filter(value => value && String(value).trim())
+      .map(value => String(value).trim()).join(" · ") || String(error);
+  };
+  const ensureSession = async () => {
+    const { data, error } = await client.auth.getSession();
+    if (error) throw new Error("读取访客登录状态失败：" + errorDetail(error));
+    if (data.session?.user?.id) return data.session;
+    const { data: signedIn, error: signInError } = await client.auth.signInAnonymously();
+    if (signInError) throw new Error("访客登录已失效，重新建立失败：" + errorDetail(signInError));
+    if (!signedIn.user?.id) throw new Error("未能取得访客身份，请刷新页面后重试。");
+    const { data: refreshed, error: refreshError } = await client.auth.getSession();
+    if (refreshError || !refreshed.session?.user?.id) {
+      throw new Error("访客身份建立后未能读取登录状态：" + errorDetail(refreshError));
+    }
+    return refreshed.session;
+  };
   const addBubble = (item) => {
     const row = document.createElement("div");
     row.className = "chat-message " + (item.sender_role === "visitor" ? "from-visitor" : "from-admin");
@@ -92,19 +111,35 @@ document.addEventListener("DOMContentLoaded", async () => {
       setNotice("为保护隐私，这条留言未发送。请删除手机号、身份证号及个人病历/检查资料，只保留一般网站或科普内容问题。", "error");
       return;
     }
-    send.disabled = true; setNotice("正在发送…");
-    const { data: sessionData } = await client.auth.getSession();
-    const { error } = await client.from("chat_messages").insert({
-      conversation_id: conversationId,
-      sender_id: sessionData.session.user.id,
-      sender_role: "visitor",
-      content
-    });
-    send.disabled = false;
-    if (error) { setNotice("发送失败，请稍后重试。", "error"); return; }
-    input.value = ""; count.textContent = "0";
-    await loadMessages();
-    setNotice("留言已发送。管理员回复后会显示在本页面。", "success");
+    send.disabled = true;
+    setNotice("正在发送…");
+    try {
+      const session = await ensureSession();
+      if (!conversationId) throw new Error("当前访客会话不存在，请刷新页面后重试。");
+      const { error } = await client.from("chat_messages").insert({
+        conversation_id: conversationId,
+        sender_id: session.user.id,
+        sender_role: "visitor",
+        content
+      });
+      if (error) {
+        console.error("邻伊访客消息发送失败", {
+          code: error.code, message: error.message, details: error.details,
+          hint: error.hint, status: error.status, conversationId
+        });
+        setNotice("发送失败：" + errorDetail(error) + "。请截图此提示发给网站管理员。", "error");
+        return;
+      }
+      input.value = "";
+      count.textContent = "0";
+      await loadMessages();
+      setNotice("留言已发送。管理员回复后会显示在本页面。", "success");
+    } catch (error) {
+      console.error("邻伊在线交流异常", error);
+      setNotice("发送未完成：" + (error.message || String(error)) + "。请刷新页面后重试。", "error");
+    } finally {
+      send.disabled = false;
+    }
   });
 
   window.addEventListener("beforeunload", () => {
