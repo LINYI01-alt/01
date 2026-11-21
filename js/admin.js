@@ -256,6 +256,47 @@ document.addEventListener("DOMContentLoaded", () => {
     window.loadLinyiSiteAnalytics = loadSiteAnalytics;
   }
 
+  // AI 科普问答历史：Edge Function 以 service role 写入，只有已验证管理员能读取/删除。
+  const aiQaSection = document.getElementById("aiQaAdminSection");
+  if (aiQaSection) {
+    const aiQaRows = document.getElementById("aiQaRows");
+    const aiQaNotice = document.getElementById("aiQaNotice");
+    const setAiQaNotice = (message, kind = "") => {
+      aiQaNotice.textContent = message;
+      aiQaNotice.className = "notice " + kind;
+    };
+    async function loadAiQaLogs() {
+      setAiQaNotice("正在读取问答记录…");
+      aiQaRows.replaceChildren();
+      const { data, error } = await client.from("ai_qa_logs")
+        .select("id,visitor_id,question,answer,created_at")
+        .order("created_at", { ascending: false }).limit(500);
+      if (error) { setAiQaNotice("读取失败：" + error.message, "error"); return; }
+      if (!data || !data.length) {
+        const tr = document.createElement("tr");
+        const td = document.createElement("td"); td.colSpan = 5; td.textContent = "暂时没有 AI 问答记录。";
+        tr.appendChild(td); aiQaRows.appendChild(tr);
+      } else data.forEach(item => {
+        const tr = document.createElement("tr");
+        for (const value of [new Date(item.created_at).toLocaleString("zh-CN"), String(item.visitor_id).slice(0, 8), item.question, item.answer]) {
+          const td = document.createElement("td"); td.className = "content-cell"; td.textContent = value || ""; tr.appendChild(td);
+        }
+        const action = document.createElement("td");
+        const del = document.createElement("button"); del.type = "button"; del.className = "small-button delete"; del.textContent = "删除";
+        del.addEventListener("click", async () => {
+          if (!confirm("确定删除这条 AI 问答记录？")) return;
+          const { error: deleteError } = await client.from("ai_qa_logs").delete().eq("id", item.id);
+          if (deleteError) { setAiQaNotice("删除失败：" + deleteError.message, "error"); return; }
+          await loadAiQaLogs();
+        });
+        action.appendChild(del); tr.appendChild(action); aiQaRows.appendChild(tr);
+      });
+      setAiQaNotice("已读取 " + data.length + " 条记录（最多显示最近 500 条）。", "success");
+    }
+    document.getElementById("refreshAiQa").addEventListener("click", loadAiQaLogs);
+    window.loadLinyiAiQaLogs = loadAiQaLogs;
+  }
+
   // 在线交流：管理员查看访客会话并回复
   const chatAdminSection = document.getElementById("chatAdminSection");
   if (chatAdminSection) {
