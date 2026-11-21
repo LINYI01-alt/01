@@ -121,6 +121,7 @@
     let channel = null;
     let ready = false;
     let connecting = false;
+    let connectPromise = null;
 
     function setNotice(message, isError) {
       notice.textContent = message;
@@ -155,52 +156,56 @@
       }
       messages.scrollTop = messages.scrollHeight;
     }
-    async function connect() {
-      if (ready || connecting) return;
+    function connect() {
+      if (ready) return Promise.resolve();
+      // Share one in-flight connection between initial panel load and send click.
+      if (connectPromise) return connectPromise;
       connecting = true;
-      try {
-        await ensureSupabase();
-        client = window.linyiCreateSupabaseClient();
-        const { data: sessionData, error: sessionError } = await client.auth.getSession();
-        if (sessionError) throw sessionError;
-        let user = sessionData.session && sessionData.session.user;
-        if (!user) {
-          const { data, error } = await client.auth.signInAnonymously();
-          if (error) throw error;
-          user = data.user;
+      connectPromise = (async () => {
+        try {
+          await ensureSupabase();
+          client = window.linyiCreateSupabaseClient();
+          const { data: sessionData, error: sessionError } = await client.auth.getSession();
+          if (sessionError) throw sessionError;
+          let user = sessionData.session && sessionData.session.user;
+          if (!user) {
+            const { data, error } = await client.auth.signInAnonymously();
+            if (error) throw error;
+            user = data.user;
+          }
+          if (!user) throw new Error("暂时无法建立访客会话，请稍后重试。");
+          const { data: existing, error: findError } = await client.from("chat_conversations")
+            .select("id,status").eq("owner_id", user.id).eq("status", "open")
+            .order("updated_at", { ascending: false }).limit(1);
+          if (findError) throw findError;
+          if (existing && existing.length) conversationId = existing[0].id;
+          else {
+            const { data: created, error: createError } = await client.from("chat_conversations")
+              .insert({ owner_id: user.id, subject: "网站在线交流" }).select("id").single();
+            if (createError) throw createError;
+            conversationId = created.id;
+          }
+          await loadMessages();
+          ready = true;
+          status.textContent = "留言通道可用 · 人工客服稍后跟进";
+          send.disabled = false;
+          setNotice("已连接。您发送的留言会进入现有管理员后台。");
+          channel = client.channel("linyi-floating-chat-" + conversationId)
+            .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: "conversation_id=eq." + conversationId }, loadMessages)
+            .subscribe();
+        } catch (error) {
+          console.error("邻伊在线交流连接失败", error);
+          status.textContent = "留言服务暂不可用";
+          setNotice(error.message || "连接失败，请稍后重试或前往在线交流页面。", true);
+          client = null;
+          conversationId = null;
+          ready = false;
+          send.disabled = false;
+        } finally {
+          connecting = false;
         }
-        if (!user) throw new Error("暂时无法建立访客会话，请稍后重试。");
-        const { data: existing, error: findError } = await client.from("chat_conversations")
-          .select("id,status").eq("owner_id", user.id).eq("status", "open")
-          .order("updated_at", { ascending: false }).limit(1);
-        if (findError) throw findError;
-        if (existing && existing.length) conversationId = existing[0].id;
-        else {
-          const { data: created, error: createError } = await client.from("chat_conversations")
-            .insert({ owner_id: user.id, subject: "网站在线交流" }).select("id").single();
-          if (createError) throw createError;
-          conversationId = created.id;
-        }
-        await loadMessages();
-        ready = true;
-        status.textContent = "留言通道可用 · 人工客服稍后跟进";
-        send.disabled = false;
-        setNotice("已连接。您发送的留言会进入现有管理员后台。");
-        channel = client.channel("linyi-floating-chat-" + conversationId)
-          .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: "conversation_id=eq." + conversationId }, loadMessages)
-          .subscribe();
-      } catch (error) {
-        console.error("邻伊在线交流连接失败", error);
-        status.textContent = "留言服务暂不可用";
-        setNotice(error.message || "连接失败，请稍后重试或前往在线交流页面。", true);
-        // Keep the button clickable so visitors can trigger a fresh connection attempt.
-        client = null;
-        conversationId = null;
-        ready = false;
-        send.disabled = false;
-      } finally {
-        connecting = false;
-      }
+      })();
+      return connectPromise.finally(() => { connectPromise = null; });
     }
 
     function openPanel() {
