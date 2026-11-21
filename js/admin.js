@@ -37,6 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
     await loadSubmissions();
     if (typeof window.loadLinyiAdminChats === "function") await window.loadLinyiAdminChats();
     if (typeof window.loadLinyiSiteAnalytics === "function") await window.loadLinyiSiteAnalytics();
+    if (typeof window.loadLinyiAiQaLogs === "function") await window.loadLinyiAiQaLogs();
     return true;
   }
 
