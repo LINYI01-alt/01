@@ -111,6 +111,21 @@
       </div>
 
       
+      <section class="admin-card" id="aiQaAdminSection">
+        <h2>AI 科普问答记录</h2>
+        <p class="security-note">仅管理员可查看。系统使用随机访客编号，不记录姓名、手机号或 IP。访客提问及 AI 回答会被保存用于服务质量检查；请勿在问答中提交个人身份资料、病历或检查报告。</p>
+        <div class="admin-toolbar">
+          <button id="refreshAiQa" class="btn btn-outline" type="button">刷新问答记录</button>
+          <span id="aiQaNotice" class="notice" role="status" aria-live="polite"></span>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>时间</th><th>匿名访客编号</th><th>访客问题</th><th>AI 回答</th><th>操作</th></tr></thead>
+            <tbody id="aiQaRows"></tbody>
+          </table>
+        </div>
+      </section>
+
       <section class="admin-card" id="chatAdminSection">
         <h2>访客留言与在线交流管理</h2>
         <p>查看访客留言并以邻伊管理员身份回复。仅处理网站使用、科普内容建议和资料反馈，不进行诊疗咨询。</p>
