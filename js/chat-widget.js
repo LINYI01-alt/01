@@ -9,6 +9,7 @@
     return new Promise((resolve, reject) => {
       const existing = Array.from(document.scripts).find(item => item.src === src);
       if (existing) {
+        if (src.includes("visitor-identity.js") && window.linyiGetVisitorSession) return resolve();
         if (existing.dataset.loaded === "true") return resolve();
         existing.addEventListener("load", resolve, { once: true });
         existing.addEventListener("error", reject, { once: true });
