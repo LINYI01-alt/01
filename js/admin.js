@@ -18,7 +18,15 @@ document.addEventListener("DOMContentLoaded", () => {
     loginPanel.hidden = true;
     dashboard.hidden = false;
     userLabel.textContent = user?.email || "已登录管理员";
+    activateAdminPanel("overview");
   };
+
+  function activateAdminPanel(panelName) {
+    document.querySelectorAll("[data-admin-panel]").forEach(panel => { panel.hidden = panel.dataset.adminPanel !== panelName; });
+    document.querySelectorAll("[data-admin-tab]").forEach(button => button.classList.toggle("active", button.dataset.adminTab === panelName));
+  }
+
+  document.querySelectorAll("[data-admin-tab]").forEach(button => button.addEventListener("click", () => activateAdminPanel(button.dataset.adminTab)));
 
   const showLogin = () => {
     dashboard.hidden = true;
@@ -60,6 +68,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     setMessage(dashboardMessage, `共加载 ${data.length} 条记录。`);
+    const pendingStat = document.getElementById("statPending");
+    if (pendingStat) {
+      const { count, error: countError } = await client.from("submissions").select("id", { count: "exact", head: true }).eq("status", "pending");
+      pendingStat.textContent = countError ? "—" : String(count ?? 0);
+    }
     if (!data.length) {
       const tr = document.createElement("tr");
       const td = document.createElement("td");
@@ -261,6 +274,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       unreadTotal = unreadByConversation.size;
       const pendingTotal = pendingByConversation.size;
+      const unreadStat = document.getElementById("statUnread");
+      if (unreadStat) unreadStat.textContent = String(unreadTotal);
       const badge = document.getElementById("chatUnreadSummary");
       if (badge) badge.textContent = "未读 " + unreadTotal + " 个 · 待回复 " + pendingTotal + " 个";
     }
@@ -271,6 +286,8 @@ document.addEventListener("DOMContentLoaded", () => {
         .order("updated_at", { ascending: false }).limit(100);
       if (error) { chatNotice("会话读取失败：" + error.message, "error"); return; }
       await refreshUnreadCounts(data);
+      const chatStat = document.getElementById("statChats");
+      if (chatStat) chatStat.textContent = String((data || []).length);
       list.replaceChildren();
       if (!data || !data.length) {
         const empty = document.createElement("p"); empty.className = "chat-empty";
@@ -431,6 +448,8 @@ document.addEventListener("DOMContentLoaded", () => {
         action.appendChild(button); tr.appendChild(action); rows.appendChild(tr);
       });
       notice.textContent = "已加载 " + (data || []).length + " 位客户（最多显示最近 200 位）。";
+      const customerStat = document.getElementById("statCustomers");
+      if (customerStat) customerStat.textContent = String((data || []).length);
     }
 
     async function loadVisitorTimeline(profile) {
