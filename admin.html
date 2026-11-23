@@ -27,7 +27,7 @@
     .content-cell{max-width:360px;white-space:pre-wrap;overflow-wrap:anywhere}
     .status{display:inline-block;padding:4px 9px;border-radius:20px;background:#eee;font-size:.85rem}
     .status-pending{background:#fff2cf;color:#805e00}.status-approved{background:#dff3e6;color:#21633b}.status-rejected{background:#fbe4e4;color:#913232}
-    .row-actions{display:flex;gap:6px;flex-wrap:wrap}
+    .row-actions{display:flex;gap:6px;flex-wrap:wrap}.chat-conversation-row{display:flex;gap:6px;align-items:stretch;margin:5px 0}.chat-conversation-row .chat-conversation-item{flex:1;min-width:0;text-align:left}.chat-conversation-delete{align-self:center;white-space:nowrap}
     .small-button{border:0;border-radius:6px;padding:7px 10px;cursor:pointer}
     .approve{background:#dff3e6;color:#21633b}.reject{background:#fff2cf;color:#805e00}.delete{background:#fbe4e4;color:#913232}
     .analytics-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}.analytics-stat{padding:18px;border:1px solid var(--border);border-radius:12px;background:#fff}.analytics-stat span{display:block;color:var(--text-light);font-size:.9rem}.analytics-stat strong{display:block;margin-top:6px;color:var(--deep-green);font-size:1.8rem}.analytics-columns{display:grid;grid-template-columns:1fr 1fr;gap:24px}.analytics-columns h3{margin:10px 0;color:var(--deep-green)}.analytics-table{min-width:0}.security-note{font-size:.92rem;color:var(--text-light);background:var(--soft-gray);padding:14px;border-radius:8px}
@@ -95,6 +95,12 @@
     </section>
 
     <section id="dashboard" hidden>
+      <nav class="admin-nav" aria-label="管理员功能导航">
+        <button type="button" class="admin-nav-item active" data-admin-tab="overview">管理总览</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="chatAdminSection">客户聊天</button>
+        
+        <button type="button" class="admin-nav-item" data-admin-tab="visitorProfilesSection">客户资料</button>
+      </nav>
       <section class="admin-card admin-overview" data-admin-panel="overview">
         <div class="admin-overview-head"><div><h1>管理总览</h1><p>欢迎回来，<strong id="adminUser"></strong>。这里集中查看需要处理的事项。</p></div><button id="logoutButton" class="btn btn-outline" type="button">退出登录</button></div>
         <div class="analytics-summary admin-stats">
@@ -105,12 +111,6 @@
         </div>
         <p class="security-note">从上方导航进入对应工作区。客户资料与历史是统一档案，AI 和人工聊天记录会按客户关联展示。</p>
       </section>
-      <nav class="admin-nav" aria-label="管理员功能导航">
-        <button type="button" class="admin-nav-item active" data-admin-tab="overview">管理总览</button>
-        <button type="button" class="admin-nav-item" data-admin-tab="chatAdminSection">客户聊天</button>
-        
-        <button type="button" class="admin-nav-item" data-admin-tab="visitorProfilesSection">客户资料</button>
-      </nav>
       <div data-admin-panel="chatAdminSection"><section class="admin-card" id="chatAdminSection">
         <h2>客户聊天</h2>
         <p>查看访客留言并以邻伊管理员身份回复。仅处理网站使用、科普内容建议和资料反馈，不进行诊疗咨询。</p>
