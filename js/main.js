@@ -213,156 +213,16 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
-  // 邻伊 AI 科普助手：所有页面统一加载
-(function initLinyiAI() {
-  const LINYI_AI_URL = "https://rhmoeecrznpkhtkoktng.supabase.co/functions/v1/linyi-ai";
-  if (document.getElementById("linyi-ai-launcher")) return;
-
-  const style = document.createElement("style");
-  style.textContent = `
-    #linyi-ai-launcher{position:fixed;right:22px;bottom:22px;z-index:2147483000;border:0;border-radius:28px;padding:14px 19px;background:#315d4b;color:#fff;font:600 15px Arial,sans-serif;box-shadow:0 5px 22px #0003;cursor:pointer}
-    #linyi-ai-panel{position:fixed;right:20px;bottom:82px;width:min(370px,calc(100vw - 28px));height:min(540px,calc(100vh - 120px));z-index:2147483000;background:#fff;border:1px solid #d9e3dc;border-radius:16px;box-shadow:0 10px 35px #0003;display:none;overflow:hidden;font-family:Arial,sans-serif;color:#263b30}
-    #linyi-ai-panel.open{display:flex;flex-direction:column}
-    #linyi-ai-head{padding:14px 16px;background:#315d4b;color:#fff;display:flex;justify-content:space-between;align-items:center}
-    #linyi-ai-head button{background:transparent;border:0;color:#fff;font-size:22px;cursor:pointer}
-    #linyi-ai-messages{padding:14px;overflow:auto;flex:1;background:#fafcf9}
-    #linyi-ai-messages p{white-space:pre-wrap;overflow-wrap:anywhere;padding:10px 12px;border-radius:12px;margin:8px 0;max-width:90%;font-size:14px;line-height:1.55}
-    #linyi-ai-messages .user{background:#e5f0e9;margin-left:auto}
-    #linyi-ai-messages .bot{background:#f0f2ef;margin-right:auto}
-    #linyi-ai-form{display:flex;gap:8px;padding:12px;border-top:1px solid #e5e9e5}
-    #linyi-ai-input{min-width:0;flex:1;border:1px solid #cbd7ce;border-radius:10px;padding:10px;font:inherit}
-    #linyi-ai-form button{border:0;border-radius:10px;background:#315d4b;color:#fff;padding:0 15px;cursor:pointer}
-    #linyi-ai-note{font-size:11px;color:#68766d;padding:0 13px 10px}
-    @media(max-width:480px){#linyi-ai-launcher{right:14px;bottom:14px}#linyi-ai-panel{right:10px;bottom:72px}}
-  `;
-
-  const launcher = document.createElement("button");
-  launcher.id = "linyi-ai-launcher";
-  launcher.type = "button";
-  launcher.textContent = "✦ AI 科普问答";
-  launcher.setAttribute("aria-label", "打开 AI 科普问答");
-
-  const panel = document.createElement("section");
-  panel.id = "linyi-ai-panel";
-  panel.setAttribute("aria-label", "邻伊 AI 科普助手");
-  panel.innerHTML = '<div id="linyi-ai-head"><strong>邻伊 AI 科普助手</strong><button type="button" aria-label="关闭">×</button></div><div id="linyi-ai-messages" aria-live="polite"><p class="bot">你好！我可以帮助查找一般生育健康与辅助生殖知识。不能诊断、解读个人报告、提供用药或治疗建议。请勿输入任何个人或健康隐私信息。</p></div><form id="linyi-ai-form"><input id="linyi-ai-input" maxlength="2000" placeholder="请输入你的问题…" required><button type="submit">发送</button></form><div id="linyi-ai-note">仅限一般知识科普；不诊断、不解读个人报告、不提供用药或治疗建议。请勿输入姓名、手机号、身份证号、病历或检查报告。</div>';
-
-  document.head.appendChild(style);
-  document.body.append(launcher, panel);
-
-  launcher.addEventListener("click", function () {
-    panel.classList.toggle("open");
-  });
-  panel.querySelector("#linyi-ai-head button").addEventListener("click", function () {
-    panel.classList.remove("open");
-  });
-
-  const messages = panel.querySelector("#linyi-ai-messages");
-  const form = panel.querySelector("#linyi-ai-form");
-  const input = panel.querySelector("#linyi-ai-input");
-  const send = form.querySelector("button");
-  const history = [];
-  let aiConversationId = "";
-  try { aiConversationId = localStorage.getItem("linyi_ai_conversation_id") || ""; } catch (_) {}
-  async function ensureVisitorIdentity() {
-    if (window.linyiGetVisitorSession) return;
-    const mainScript = document.querySelector('script[src*="js/main.js"]');
-    const helperUrl = new URL("visitor-identity.js", mainScript && mainScript.src ? mainScript.src : window.location.href.replace(/[^/]*$/, "js/main.js")).href;
-    await new Promise((resolve, reject) => {
-      const existing = Array.from(document.scripts).find(script => script.src === helperUrl);
-      if (existing) {
-        if (window.linyiGetVisitorSession) return resolve();
-        existing.addEventListener("load", resolve, { once: true });
-        existing.addEventListener("error", reject, { once: true });
-        return;
-      }
-      const script = document.createElement("script");
-      script.src = helperUrl;
-      script.onload = resolve;
-      script.onerror = () => reject(new Error("访客身份组件加载失败。"));
-      document.head.appendChild(script);
-    });
-  }
-
-  function addMessage(text, role) {
-    const p = document.createElement("p");
-    p.className = role;
-    p.textContent = text;
-    messages.appendChild(p);
-    messages.scrollTop = messages.scrollHeight;
-    return p;
-  }
-
-  form.addEventListener("submit", async function (event) {
-    event.preventDefault();
-    const question = input.value.trim();
-    if (!question) return;
-
-    // 敏感个人信息和个体化诊疗请求不发送给 AI。
-    const hasPersonalId = /(?:1[3-9]\d{9}|\d{17}[0-9Xx])/i.test(question);
-    const clinicalRequest = /(我的(检查|报告|化验|B超|超声|AMH|病历)|报告(显示|提示|结果)|数值(偏高|偏低)|帮我(诊断|判断|看报告|制定方案)|该吃什么药|用药剂量|打多少(单位|针)|促排方案|成功率(多少|预测)|是否(能怀孕|适合试管)|症状.*怎么办)/i.test(question);
-    if (hasPersonalId || clinicalRequest) {
-      addMessage(hasPersonalId
-        ? "为保护隐私，请不要提交身份证号或手机号。此内容未发送。"
-        : "这个问题涉及个人检查结果或诊疗决策，我不能进行诊断、报告解读、用药指导或成功率预测。请向正规医疗机构的专业人员咨询。你可以改问一般概念，例如“AMH 是什么？”或“胚胎培养是什么意思？”。此内容未发送。", "bot");
-      input.value = "";
-      return;
-    }
-
-    history.push({ role: "user", content: question });
-    addMessage(question, "user");
-    input.value = "";
-    send.disabled = true;
-    const waiting = addMessage("正在思考…", "bot");
-
-    try {
-      await ensureVisitorIdentity();
-      const identity = await window.linyiGetVisitorSession();
-      const response = await fetch(LINYI_AI_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "apikey": window.LINYI_SUPABASE_PUBLISHABLE_KEY,
-          "Authorization": "Bearer " + identity.session.access_token
-        },
-        body: JSON.stringify({ action: "chat", messages: history, conversation_id: aiConversationId })
-      });
-
-      // Read once as text so invalid JSON and empty bodies are diagnosable.
-      const raw = await response.text();
-      let result;
-      try {
-        result = raw ? JSON.parse(raw) : null;
-      } catch (_) {
-        throw new Error("AI 网关返回了非 JSON 内容（HTTP " + response.status + "）。请检查 Cloudflare Worker 部署版本。");
-      }
-
-      if (!response.ok) {
-        const detail = result && typeof result.error === "string" ? result.error : "网关请求失败";
-        throw new Error(detail + "（HTTP " + response.status + "）");
-      }
-
-      const answer = result && typeof result.answer === "string" ? result.answer.trim() : "";
-      if (!answer) {
-        const keys = result && typeof result === "object" ? Object.keys(result).join(", ") : "无 JSON 对象";
-        throw new Error("AI 网关返回 HTTP " + response.status + "，但 answer 为空。响应字段：" + keys + "。这通常表示 Cloudflare 仍运行旧版 Worker，或模型结果解析失败。");
-      }
-
-      waiting.textContent = answer;
-      if (result.conversation_id) {
-        aiConversationId = result.conversation_id;
-        try { localStorage.setItem("linyi_ai_conversation_id", aiConversationId); } catch (_) {}
-      }
-      history.push({ role: "assistant", content: answer });
-      if (history.length > 12) history.splice(0, 2);
-    } catch (error) {
-      waiting.textContent = error.message || "连接失败，请稍后重试。";
-      history.pop();
-    } finally {
-      send.disabled = false;
-      input.focus();
-    }
-  });
+  // AI 科普助手独立模块：支持历史会话恢复，避免主站脚本过长。
+(function loadLinyiAIAssistant() {
+  if (document.getElementById("linyi-ai-assistant-loader")) return;
+  const current = document.querySelector('script[src*="js/main.js"]');
+  const base = current && current.src ? current.src : new URL("js/main.js", location.href).href;
+  const script = document.createElement("script");
+  script.id = "linyi-ai-assistant-loader";
+  script.src = new URL("ai-assistant.js", base).href;
+  script.defer = true;
+  document.head.appendChild(script);
 })();
 
 
