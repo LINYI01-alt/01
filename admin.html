@@ -107,9 +107,9 @@
       </section>
       <nav class="admin-nav" aria-label="管理员功能导航">
         <button type="button" class="admin-nav-item active" data-admin-tab="overview">管理总览</button>
-        <button type="button" class="admin-nav-item" data-admin-tab="chatAdminSection">聊天窗口</button>
-        <button type="button" class="admin-nav-item" data-admin-tab="submissionPanel">投稿审核</button>
-        <button type="button" class="admin-nav-item" data-admin-tab="visitorProfilesSection">客户资料与历史</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="chatAdminSection">客户聊天</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="submissionPanel">客户投稿</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="visitorProfilesSection">客户资料</button>
       </nav>
       <div data-admin-panel="chatAdminSection"><section class="admin-card" id="chatAdminSection">
         <h2>客户聊天</h2>
@@ -129,8 +129,8 @@
         </div>
       </section></div>
       <div data-admin-panel="submissionPanel"><div class="admin-card submission-admin-card">
-        <h1>投稿审核</h1>
-        <p>当前登录：<strong id="adminUser"></strong></p>
+        <h1>客户投稿</h1>
+        <p>集中查看客户投稿并完成审核。</p>
         <div class="admin-toolbar">
           <label for="statusFilter">审核状态：</label>
           <select id="statusFilter">
@@ -154,10 +154,10 @@
       
       </div>
       <div data-admin-panel="visitorProfilesSection"><section class="admin-card" id="visitorProfilesSection">
-        <h1>客户资料与历史</h1>
-        <p class="security-note">一个客户一份档案，集中查看客户分类、AI 对话、人工聊天和访问记录。</p>
+        <h1>客户资料</h1>
+        <p class="security-note">一个客户一份档案，集中查看客户分类、AI 问答历史、人工聊天和客户投稿记录。</p>
         
-        <p class="security-note">按 Supabase 匿名用户 UUID 识别同一浏览器访客。标签反映访问频率，不代表已验证的自然人身份。选择客户可查看 AI 问答、人工留言和页面访问时间线。</p>
+        <p class="security-note">按 Supabase 匿名用户 UUID 识别同一浏览器访客。标签反映访问频率，不代表已验证的自然人身份。选择客户可查看 AI 问答、人工留言和页面访问时间线；投稿历史在下方统一查看。</p>
         <div class="admin-toolbar">
           <button id="refreshVisitorProfiles" class="btn btn-outline" type="button">刷新客户档案</button>
           <span id="visitorProfilesNotice" class="notice" role="status" aria-live="polite"></span>
@@ -168,6 +168,10 @@
             <tbody id="visitorProfileRows"></tbody>
           </table>
         </div>
+        <h2>客户投稿记录</h2>
+        <p class="security-note">这里集中展示网站收到的投稿。现有投稿表尚未保存访客 UUID，因此历史投稿暂不能可靠地归属到某一位客户；不会根据姓名或联系方式猜测匹配。</p>
+        <div class="admin-toolbar"><button id="refreshProfileSubmissions" class="btn btn-outline" type="button">刷新客户投稿</button><span id="profileSubmissionsNotice" class="notice" role="status" aria-live="polite"></span></div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>投稿</th><th>作者/联系方式</th><th>状态</th><th>提交时间</th></tr></thead><tbody id="profileSubmissionRows"></tbody></table></div>
         <div id="visitorTimelinePanel" hidden>
           <h3 id="visitorTimelineTitle">客户互动时间线</h3>
           <div id="visitorTimeline" class="admin-table-wrap"></div>
