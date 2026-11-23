@@ -262,16 +262,26 @@ document.addEventListener('DOMContentLoaded', function () {
   const input = panel.querySelector("#linyi-ai-input");
   const send = form.querySelector("button");
   const history = [];
-  let aiVisitorId = "";
-  try {
-    const visitorKey = "linyi_ai_visitor_id";
-    aiVisitorId = localStorage.getItem(visitorKey) || "";
-    if (!/^[0-9a-f-]{36}$/i.test(aiVisitorId)) {
-      aiVisitorId = crypto.randomUUID();
-      localStorage.setItem(visitorKey, aiVisitorId);
-    }
-  } catch (_) {
-    aiVisitorId = crypto.randomUUID();
+  let aiConversationId = "";
+  try { aiConversationId = localStorage.getItem("linyi_ai_conversation_id") || ""; } catch (_) {}
+  async function ensureVisitorIdentity() {
+    if (window.linyiGetVisitorSession) return;
+    const mainScript = document.querySelector('script[src*="js/main.js"]');
+    const helperUrl = new URL("visitor-identity.js", mainScript && mainScript.src ? mainScript.src : window.location.href.replace(/[^/]*$/, "js/main.js")).href;
+    await new Promise((resolve, reject) => {
+      const existing = Array.from(document.scripts).find(script => script.src === helperUrl);
+      if (existing) {
+        if (window.linyiGetVisitorSession) return resolve();
+        existing.addEventListener("load", resolve, { once: true });
+        existing.addEventListener("error", reject, { once: true });
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = helperUrl;
+      script.onload = resolve;
+      script.onerror = () => reject(new Error("访客身份组件加载失败。"));
+      document.head.appendChild(script);
+    });
   }
 
   function addMessage(text, role) {
@@ -306,13 +316,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const waiting = addMessage("正在思考…", "bot");
 
     try {
+      await ensureVisitorIdentity();
+      const identity = await window.linyiGetVisitorSession();
       const response = await fetch(LINYI_AI_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "apikey": window.LINYI_SUPABASE_PUBLISHABLE_KEY
+          "apikey": window.LINYI_SUPABASE_PUBLISHABLE_KEY,
+          "Authorization": "Bearer " + identity.session.access_token
         },
-        body: JSON.stringify({ action: "chat", messages: history, visitor_id: aiVisitorId })
+        body: JSON.stringify({ action: "chat", messages: history, conversation_id: aiConversationId })
       });
 
       // Read once as text so invalid JSON and empty bodies are diagnosable.
@@ -336,6 +349,10 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       waiting.textContent = answer;
+      if (result.conversation_id) {
+        aiConversationId = result.conversation_id;
+        try { localStorage.setItem("linyi_ai_conversation_id", aiConversationId); } catch (_) {}
+      }
       history.push({ role: "assistant", content: answer });
       if (history.length > 12) history.splice(0, 2);
     } catch (error) {
