@@ -111,8 +111,10 @@
       </div>
 
       
-      <section class="admin-card" id="visitorProfilesSection">
-        <h2>统一客户档案</h2>
+      <section class="admin-card" id="customerServiceCenter">
+        <h1>客户服务中心</h1>
+        <p class="security-note">在这里统一查看客户资料、AI 问答、访问记录和人工聊天。新留言会显示未回复提示；无需删除或迁移历史数据。</p>
+        <h2>客户资料与历史</h2>
         <p class="security-note">按 Supabase 匿名用户 UUID 识别同一浏览器访客。标签反映访问频率，不代表已验证的自然人身份。选择客户可查看 AI 问答、人工留言和页面访问时间线。</p>
         <div class="admin-toolbar">
           <button id="refreshVisitorProfiles" class="btn btn-outline" type="button">刷新客户档案</button>
@@ -131,7 +133,7 @@
       </section>
 
       <section class="admin-card" id="aiQaAdminSection">
-        <h2>AI 科普问答记录</h2>
+        <h2>AI 问答历史</h2>
         <p class="security-note">仅管理员可查看。新记录使用 Supabase 匿名认证 UUID 关联客户档案；旧记录保留原编号，不会强行合并。访客提问及 AI 回答会被保存用于服务质量检查；请勿在问答中提交个人身份资料、病历或检查报告。</p>
         <div class="admin-toolbar">
           <button id="refreshAiQa" class="btn btn-outline" type="button">刷新问答记录</button>
@@ -146,9 +148,9 @@
       </section>
 
       <section class="admin-card" id="chatAdminSection">
-        <h2>访客留言与在线交流管理</h2>
+        <h2>客户聊天</h2>
         <p>查看访客留言并以邻伊管理员身份回复。仅处理网站使用、科普内容建议和资料反馈，不进行诊疗咨询。</p>
-        <div class="admin-toolbar"><button id="refreshChats" class="btn btn-outline" type="button">刷新会话</button><span id="chatAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
+        <div class="admin-toolbar"><strong id="chatUnreadSummary" role="status">正在检查未回复留言…</strong><button id="refreshChats" class="btn btn-outline" type="button">刷新会话</button><span id="chatAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
         <div class="chat-admin-layout">
           <div class="chat-admin-list"><h3>访客会话</h3><div id="chatConversationList" class="chat-conversation-list">正在加载…</div></div>
           <div class="chat-admin-detail">
@@ -158,6 +160,7 @@
               <textarea id="chatAdminReply" rows="3" maxlength="1200" placeholder="输入给访客的回复…" required></textarea>
               <div class="chat-compose-bottom"><small>仅回复非诊疗类内容</small><button id="chatAdminSend" class="btn btn-primary" type="submit">发送回复</button><button id="chatAdminClose" class="btn btn-outline" type="button">结束会话</button></div>
             </form>
+            <div id="chatCustomerContext" class="security-note" style="margin-top:16px;max-height:340px;overflow:auto">选择客户后显示历史资料。</div>
           </div>
         </div>
       </section>
