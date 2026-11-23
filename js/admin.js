@@ -236,31 +236,41 @@ document.addEventListener("DOMContentLoaded", () => {
     const chatNotice = (text, kind = "") => { notice.textContent = text; notice.className = "notice " + kind; };
 
     let unreadByConversation = new Map();
+    let pendingByConversation = new Map();
     let unreadTotal = 0;
-    async function refreshUnreadCounts() {
+    async function refreshUnreadCounts(conversations) {
       const { data, error } = await client.from("chat_messages")
         .select("conversation_id,sender_role,created_at")
         .order("created_at", { ascending: false }).limit(2000);
       if (error) { chatNotice("未读状态读取失败：" + error.message, "error"); return; }
       const latest = new Map();
+      const latestVisitor = new Map();
       (data || []).forEach(message => {
         if (!latest.has(message.conversation_id)) latest.set(message.conversation_id, message);
+        if (message.sender_role === "visitor" && !latestVisitor.has(message.conversation_id)) latestVisitor.set(message.conversation_id, message);
       });
       unreadByConversation = new Map();
-      latest.forEach((message, id) => {
-        if (message.sender_role === "visitor") unreadByConversation.set(id, true);
+      pendingByConversation = new Map();
+      (conversations || []).forEach(conversation => {
+        const lastMessage = latest.get(conversation.id);
+        const lastVisitorMessage = latestVisitor.get(conversation.id);
+        if (lastMessage?.sender_role === "visitor") pendingByConversation.set(conversation.id, true);
+        if (lastVisitorMessage && (!conversation.admin_last_read_at || new Date(lastVisitorMessage.created_at) > new Date(conversation.admin_last_read_at))) {
+          unreadByConversation.set(conversation.id, true);
+        }
       });
       unreadTotal = unreadByConversation.size;
+      const pendingTotal = pendingByConversation.size;
       const badge = document.getElementById("chatUnreadSummary");
-      if (badge) badge.textContent = unreadTotal ? ("有 " + unreadTotal + " 个会话待回复") : "目前没有待回复留言";
+      if (badge) badge.textContent = "未读 " + unreadTotal + " 个 · 待回复 " + pendingTotal + " 个";
     }
 
     async function loadChatList() {
       const { data, error } = await client.from("chat_conversations")
-        .select("id,owner_id,subject,status,created_at,updated_at")
+        .select("id,owner_id,subject,status,created_at,updated_at,admin_last_read_at")
         .order("updated_at", { ascending: false }).limit(100);
       if (error) { chatNotice("会话读取失败：" + error.message, "error"); return; }
-      await refreshUnreadCounts();
+      await refreshUnreadCounts(data);
       list.replaceChildren();
       if (!data || !data.length) {
         const empty = document.createElement("p"); empty.className = "chat-empty";
@@ -270,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "chat-conversation-item" + (activeConversation?.id === item.id ? " active" : "");
-        const subject = document.createElement("strong"); subject.textContent = (item.subject || "网站内容交流") + (unreadByConversation.has(item.id) ? "　● 待回复" : "");
+        const subject = document.createElement("strong"); subject.textContent = (item.subject || "网站内容交流") + ((unreadByConversation.has(item.id) ? "　● 未读" : "") + (pendingByConversation.has(item.id) ? "　待回复" : ""));
         const meta = document.createElement("small");
         meta.textContent = (item.status === "open" ? "进行中" : "已结束") + " · " + new Date(item.updated_at).toLocaleString("zh-CN");
         button.append(subject, meta);
@@ -336,6 +346,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     async function selectConversation(item) {
       activeConversation = item;
+      const { error: readError } = await client.from("chat_conversations").update({ admin_last_read_at: new Date().toISOString() }).eq("id", item.id);
+      if (readError) chatNotice("已打开会话，但已读状态保存失败：" + readError.message, "error");
       title.textContent = (item.subject || "网站内容交流") + (item.status === "open" ? " · 进行中" : " · 已结束");
       replyForm.hidden = item.status !== "open";
       await loadChatList(); await loadChatMessages();
