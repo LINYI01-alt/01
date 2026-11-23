@@ -235,11 +235,32 @@ document.addEventListener("DOMContentLoaded", () => {
     let adminChatChannel = null;
     const chatNotice = (text, kind = "") => { notice.textContent = text; notice.className = "notice " + kind; };
 
+    let unreadByConversation = new Map();
+    let unreadTotal = 0;
+    async function refreshUnreadCounts() {
+      const { data, error } = await client.from("chat_messages")
+        .select("conversation_id,sender_role,created_at")
+        .order("created_at", { ascending: false }).limit(2000);
+      if (error) { chatNotice("未读状态读取失败：" + error.message, "error"); return; }
+      const latest = new Map();
+      (data || []).forEach(message => {
+        if (!latest.has(message.conversation_id)) latest.set(message.conversation_id, message);
+      });
+      unreadByConversation = new Map();
+      latest.forEach((message, id) => {
+        if (message.sender_role === "visitor") unreadByConversation.set(id, true);
+      });
+      unreadTotal = unreadByConversation.size;
+      const badge = document.getElementById("chatUnreadSummary");
+      if (badge) badge.textContent = unreadTotal ? ("有 " + unreadTotal + " 个会话待回复") : "目前没有待回复留言";
+    }
+
     async function loadChatList() {
       const { data, error } = await client.from("chat_conversations")
-        .select("id,subject,status,created_at,updated_at")
+        .select("id,owner_id,subject,status,created_at,updated_at")
         .order("updated_at", { ascending: false }).limit(100);
       if (error) { chatNotice("会话读取失败：" + error.message, "error"); return; }
+      await refreshUnreadCounts();
       list.replaceChildren();
       if (!data || !data.length) {
         const empty = document.createElement("p"); empty.className = "chat-empty";
@@ -249,7 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "chat-conversation-item" + (activeConversation?.id === item.id ? " active" : "");
-        const subject = document.createElement("strong"); subject.textContent = item.subject || "网站内容交流";
+        const subject = document.createElement("strong"); subject.textContent = (item.subject || "网站内容交流") + (unreadByConversation.has(item.id) ? "　● 待回复" : "");
         const meta = document.createElement("small");
         meta.textContent = (item.status === "open" ? "进行中" : "已结束") + " · " + new Date(item.updated_at).toLocaleString("zh-CN");
         button.append(subject, meta);
@@ -258,6 +279,41 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       chatNotice("已加载 " + data.length + " 个访客会话。");
     }
+    async function loadCustomerContext(visitorId) {
+      const panel = document.getElementById("chatCustomerContext");
+      if (!panel) return;
+      panel.replaceChildren();
+      if (!visitorId) { panel.textContent = "此会话没有关联客户档案。"; return; }
+      const heading = document.createElement("h3"); heading.textContent = "客户历史记录";
+      const intro = document.createElement("p"); intro.textContent = "客户编号：" + visitorId;
+      panel.append(heading, intro);
+      const [profile, ai, pages] = await Promise.all([
+        client.from("visitor_profiles").select("classification,visit_count,first_seen,last_seen").eq("id", visitorId).maybeSingle(),
+        client.from("ai_qa_logs").select("question,answer,created_at").eq("visitor_id", visitorId).order("created_at", { ascending: false }).limit(20),
+        client.from("site_page_views").select("page_path,created_at").eq("visitor_id", visitorId).order("created_at", { ascending: false }).limit(20)
+      ]);
+      if (profile.error || ai.error || pages.error) {
+        const error = document.createElement("p"); error.textContent = "部分客户历史暂时读取失败，请稍后刷新。"; panel.appendChild(error); return;
+      }
+      const summary = document.createElement("p");
+      summary.textContent = profile.data
+        ? "访问次数：" + profile.data.visit_count + " · 首次访问：" + new Date(profile.data.first_seen).toLocaleString("zh-CN") + " · 最近访问：" + new Date(profile.data.last_seen).toLocaleString("zh-CN")
+        : "暂时没有客户档案摘要。";
+      panel.appendChild(summary);
+      const aiTitle = document.createElement("h4"); aiTitle.textContent = "最近 AI 问答（最多 20 条）"; panel.appendChild(aiTitle);
+      (ai.data || []).forEach(item => {
+        const block = document.createElement("p");
+        block.textContent = new Date(item.created_at).toLocaleString("zh-CN") + " · 提问：" + item.question + " · AI 回答：" + item.answer;
+        panel.appendChild(block);
+      });
+      if (!(ai.data || []).length) { const empty = document.createElement("p"); empty.textContent = "暂无 AI 问答记录。"; panel.appendChild(empty); }
+      const pageTitle = document.createElement("h4"); pageTitle.textContent = "最近访问页面（最多 20 条）"; panel.appendChild(pageTitle);
+      (pages.data || []).forEach(item => {
+        const line = document.createElement("p"); line.textContent = new Date(item.created_at).toLocaleString("zh-CN") + " · " + item.page_path; panel.appendChild(line);
+      });
+      if (!(pages.data || []).length) { const empty = document.createElement("p"); empty.textContent = "暂无页面访问记录。"; panel.appendChild(empty); }
+    }
+
     async function loadChatMessages() {
       if (!activeConversation) return;
       const { data, error } = await client.from("chat_messages")
@@ -283,8 +339,9 @@ document.addEventListener("DOMContentLoaded", () => {
       title.textContent = (item.subject || "网站内容交流") + (item.status === "open" ? " · 进行中" : " · 已结束");
       replyForm.hidden = item.status !== "open";
       await loadChatList(); await loadChatMessages();
+      await loadCustomerContext(item.owner_id);
     }
-    document.getElementById("refreshChats").addEventListener("click", loadChatList);
+    document.getElementById("refreshChats").addEventListener("click", async () => { await loadChatList(); if (activeConversation) { await loadChatMessages(); await loadCustomerContext(activeConversation.owner_id); } });
     replyForm.addEventListener("submit", async event => {
       event.preventDefault();
       if (!activeConversation || activeConversation.status !== "open") return;
@@ -321,7 +378,13 @@ document.addEventListener("DOMContentLoaded", () => {
           await loadChatList();
           if (activeConversation && payload.new.conversation_id === activeConversation.id) await loadChatMessages();
         })
-        .subscribe();
+.subscribe();
+      window.setInterval(async () => {
+        if (document.visibilityState === "visible") {
+          await loadChatList();
+          if (activeConversation) await loadChatMessages();
+        }
+      }, 30000);
     };
   }
 
