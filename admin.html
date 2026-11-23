@@ -32,6 +32,14 @@
     .approve{background:#dff3e6;color:#21633b}.reject{background:#fff2cf;color:#805e00}.delete{background:#fbe4e4;color:#913232}
     .analytics-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}.analytics-stat{padding:18px;border:1px solid var(--border);border-radius:12px;background:#fff}.analytics-stat span{display:block;color:var(--text-light);font-size:.9rem}.analytics-stat strong{display:block;margin-top:6px;color:var(--deep-green);font-size:1.8rem}.analytics-columns{display:grid;grid-template-columns:1fr 1fr;gap:24px}.analytics-columns h3{margin:10px 0;color:var(--deep-green)}.analytics-table{min-width:0}.security-note{font-size:.92rem;color:var(--text-light);background:var(--soft-gray);padding:14px;border-radius:8px}
     [hidden]{display:none!important}
+    .admin-nav{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 22px;padding:8px;background:var(--soft-gray);border-radius:12px;position:sticky;top:8px;z-index:5}
+    .admin-nav-item{border:0;border-radius:8px;padding:11px 17px;background:transparent;color:var(--deep-green);font:inherit;font-weight:650;cursor:pointer}
+    .admin-nav-item.active{background:var(--deep-green);color:#fff;box-shadow:0 2px 8px #00000012}
+    .admin-overview-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+    .admin-overview-head h1{margin-bottom:6px}.admin-overview-head p{margin:0}
+    .admin-stats{grid-template-columns:repeat(4,minmax(0,1fr))}
+    [data-admin-panel]{min-width:0}
+    @media(max-width:600px){.admin-nav{position:static}.admin-nav-item{flex:1 1 calc(50% - 8px);padding:10px 8px}.admin-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:700px){.analytics-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.analytics-columns{grid-template-columns:1fr}}@media(max-width:600px){.admin-card{padding:18px}.admin-wrap{margin-top:20px}}
   
     .submission-admin-card{padding:16px 20px;margin:12px 0}.submission-admin-card .admin-table th,.submission-admin-card .admin-table td{padding:7px 9px}.submission-admin-card .content-cell{max-width:280px;max-height:4.8em;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;white-space:normal}.analytics-admin-card{padding:14px 18px;margin:12px 0}.analytics-admin-card .analytics-summary{gap:8px;margin:10px 0}.analytics-admin-card .analytics-stat{padding:10px 12px}.analytics-admin-card .analytics-stat strong{font-size:1.35rem}.analytics-admin-card .analytics-columns{gap:14px}.analytics-admin-card .admin-table th,.analytics-admin-card .admin-table td{padding:6px 8px}.analytics-admin-card .admin-toolbar{margin:8px 0}/* 经典早期 QQ 横向聊天窗口：左侧会话栏 + 右侧宽消息区 */
@@ -87,7 +95,40 @@
     </section>
 
     <section id="dashboard" hidden>
-      <div class="admin-card submission-admin-card">
+      <section class="admin-card admin-overview" data-admin-panel="overview">
+        <div class="admin-overview-head"><div><h1>管理总览</h1><p>欢迎回来，<strong id="adminUser"></strong>。这里集中查看需要处理的事项。</p></div><button id="logoutButton" class="btn btn-outline" type="button">退出登录</button></div>
+        <div class="analytics-summary admin-stats">
+          <div class="analytics-stat"><span>待审核投稿</span><strong id="statPending">—</strong></div>
+          <div class="analytics-stat"><span>客户聊天会话</span><strong id="statChats">—</strong></div>
+          <div class="analytics-stat"><span>客户档案</span><strong id="statCustomers">—</strong></div>
+          <div class="analytics-stat"><span>未回复会话</span><strong id="statUnread">—</strong></div>
+        </div>
+        <p class="security-note">从上方导航进入对应工作区。客户资料与历史是统一档案，AI 和人工聊天记录会按客户关联展示。</p>
+      </section>
+      <nav class="admin-nav" aria-label="管理员功能导航">
+        <button type="button" class="admin-nav-item active" data-admin-tab="overview">管理总览</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="chatAdminSection">聊天窗口</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="submissionPanel">投稿审核</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="visitorProfilesSection">客户资料与历史</button>
+      </nav>
+      <div data-admin-panel="chatAdminSection"><section class="admin-card" id="chatAdminSection">
+        <h2>客户聊天</h2>
+        <p>查看访客留言并以邻伊管理员身份回复。仅处理网站使用、科普内容建议和资料反馈，不进行诊疗咨询。</p>
+        <div class="admin-toolbar"><strong id="chatUnreadSummary" role="status">正在检查未回复留言…</strong><button id="refreshChats" class="btn btn-outline" type="button">刷新会话</button><span id="chatAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
+        <div class="chat-admin-layout">
+          <div class="chat-admin-list"><h3>访客会话</h3><div id="chatConversationList" class="chat-conversation-list">正在加载…</div></div>
+          <div class="chat-admin-detail">
+            <h3 id="chatAdminTitle">选择一个会话</h3>
+            <div id="chatAdminMessages" class="chat-messages chat-admin-messages"><div class="chat-empty">选择左侧访客会话后，这里会显示交流内容。</div></div>
+            <form id="chatAdminReplyForm" class="visitor-chat-form" hidden>
+              <textarea id="chatAdminReply" rows="3" maxlength="1200" placeholder="输入给访客的回复…" required></textarea>
+              <div class="chat-compose-bottom"><small>仅回复非诊疗类内容</small><button id="chatAdminSend" class="btn btn-primary" type="submit">发送回复</button><button id="chatAdminClose" class="btn btn-outline" type="button">结束会话</button></div>
+            </form>
+            <div id="chatCustomerContext" class="security-note" style="margin-top:16px;max-height:340px;overflow:auto">选择客户后显示历史资料。</div>
+          </div>
+        </div>
+      </section></div>
+      <div data-admin-panel="submissionPanel"><div class="admin-card submission-admin-card">
         <h1>投稿审核</h1>
         <p>当前登录：<strong id="adminUser"></strong></p>
         <div class="admin-toolbar">
@@ -99,7 +140,7 @@
             <option value="rejected">已退回</option>
           </select>
           <button id="refreshSubmissions" class="btn btn-outline" type="button">刷新</button>
-          <button id="logoutButton" class="btn btn-outline" type="button">退出登录</button>
+          
         </div>
         <p id="dashboardMessage" class="notice" role="status" aria-live="polite"></p>
         <div class="admin-table-wrap">
@@ -111,10 +152,11 @@
       </div>
 
       
-      <section class="admin-card" id="customerServiceCenter">
-        <h1>客户服务中心</h1>
-        <p class="security-note">在这里统一查看客户资料、AI 问答、访问记录和人工聊天。新留言会显示未回复提示；无需删除或迁移历史数据。</p>
-        <h2>客户资料与历史</h2>
+      </div>
+      <div data-admin-panel="visitorProfilesSection"><section class="admin-card" id="visitorProfilesSection">
+        <h1>客户资料与历史</h1>
+        <p class="security-note">一个客户一份档案，集中查看客户分类、AI 对话、人工聊天和访问记录。</p>
+        
         <p class="security-note">按 Supabase 匿名用户 UUID 识别同一浏览器访客。标签反映访问频率，不代表已验证的自然人身份。选择客户可查看 AI 问答、人工留言和页面访问时间线。</p>
         <div class="admin-toolbar">
           <button id="refreshVisitorProfiles" class="btn btn-outline" type="button">刷新客户档案</button>
@@ -132,44 +174,8 @@
         </div>
       </section>
 
-      <section class="admin-card" id="aiQaAdminSection">
-        <h2>AI 问答历史</h2>
-        <p class="security-note">仅管理员可查看。新记录使用 Supabase 匿名认证 UUID 关联客户档案；旧记录保留原编号，不会强行合并。访客提问及 AI 回答会被保存用于服务质量检查；请勿在问答中提交个人身份资料、病历或检查报告。</p>
-        <div class="admin-toolbar">
-          <button id="refreshAiQa" class="btn btn-outline" type="button">刷新问答记录</button>
-          <span id="aiQaNotice" class="notice" role="status" aria-live="polite"></span>
-        </div>
-        <div class="admin-table-wrap">
-          <table class="admin-table">
-            <thead><tr><th>时间</th><th>匿名访客编号</th><th>访客问题</th><th>AI 回答</th><th>操作</th></tr></thead>
-            <tbody id="aiQaRows"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="admin-card" id="chatAdminSection">
-        <h2>客户聊天</h2>
-        <p>查看访客留言并以邻伊管理员身份回复。仅处理网站使用、科普内容建议和资料反馈，不进行诊疗咨询。</p>
-        <div class="admin-toolbar"><strong id="chatUnreadSummary" role="status">正在检查未回复留言…</strong><button id="refreshChats" class="btn btn-outline" type="button">刷新会话</button><span id="chatAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
-        <div class="chat-admin-layout">
-          <div class="chat-admin-list"><h3>访客会话</h3><div id="chatConversationList" class="chat-conversation-list">正在加载…</div></div>
-          <div class="chat-admin-detail">
-            <h3 id="chatAdminTitle">选择一个会话</h3>
-            <div id="chatAdminMessages" class="chat-messages chat-admin-messages"><div class="chat-empty">选择左侧访客会话后，这里会显示交流内容。</div></div>
-            <form id="chatAdminReplyForm" class="visitor-chat-form" hidden>
-              <textarea id="chatAdminReply" rows="3" maxlength="1200" placeholder="输入给访客的回复…" required></textarea>
-              <div class="chat-compose-bottom"><small>仅回复非诊疗类内容</small><button id="chatAdminSend" class="btn btn-primary" type="submit">发送回复</button><button id="chatAdminClose" class="btn btn-outline" type="button">结束会话</button></div>
-            </form>
-            <div id="chatCustomerContext" class="security-note" style="margin-top:16px;max-height:340px;overflow:auto">选择客户后显示历史资料。</div>
-          </div>
-        </div>
-      </section>
-
-
-
-
-
-    </section>
+      </div>
+</section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
