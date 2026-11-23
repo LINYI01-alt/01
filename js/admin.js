@@ -429,52 +429,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const labelFor = value => ({ new: "新客户", casual: "流动客户", returning: "回访老客户", regular: "常客" }[value] || value || "未分类");
     const dateText = value => value ? new Date(value).toLocaleString("zh-CN") : "—";
 
-    async function loadProfileSubmissions() {
-      const body = document.getElementById("profileSubmissionRows");
-      const status = document.getElementById("profileSubmissionsNotice");
-      if (!body || !status) return;
-      status.textContent = "正在读取客户投稿…";
-      body.replaceChildren();
-      const { data, error } = await client.from("submissions")
-        .select("id,title,category,is_anonymous,author_name,contact,status,created_at")
-        .order("created_at", { ascending: false }).limit(300);
-      if (error) { status.textContent = "读取投稿失败：" + error.message; return; }
-      (data || []).forEach(item => {
-        const tr = document.createElement("tr");
-        const titleCell = document.createElement("td");
-        const title = document.createElement("strong");
-        title.textContent = item.title || "未命名投稿";
-        const category = document.createElement("small");
-        category.textContent = item.category || "未分类";
-        titleCell.append(title, category);
-        const authorCell = document.createElement("td");
-        authorCell.textContent = item.is_anonymous ? "匿名投稿" : (item.author_name || "未署名");
-        if (item.contact) {
-          const contact = document.createElement("small");
-          contact.textContent = item.contact;
-          authorCell.appendChild(contact);
-        }
-        const statusCell = document.createElement("td");
-        const statusTag = document.createElement("span");
-        statusTag.className = "status status-" + (item.status || "pending");
-        statusTag.textContent = ({ pending: "待审核", approved: "已通过", rejected: "已退回" })[item.status] || item.status || "未知";
-        statusCell.appendChild(statusTag);
-        const dateCell = document.createElement("td");
-        dateCell.textContent = dateText(item.created_at);
-        tr.append(titleCell, authorCell, statusCell, dateCell);
-        body.appendChild(tr);
-      });
-      if (!data || !data.length) {
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-        td.colSpan = 4;
-        td.textContent = "暂时没有客户投稿。";
-        tr.appendChild(td);
-        body.appendChild(tr);
-      }
-      status.textContent = "已加载 " + (data || []).length + " 条投稿。当前投稿表未记录客户 UUID，历史投稿暂列为未关联记录。";
-    }
-
     async function loadVisitorProfiles() {
       notice.textContent = "正在加载客户档案…";
       rows.replaceChildren();
@@ -549,11 +503,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.getElementById("refreshVisitorProfiles").addEventListener("click", loadVisitorProfiles);
-    const refreshProfileSubmissions = document.getElementById("refreshProfileSubmissions");
-    if (refreshProfileSubmissions) refreshProfileSubmissions.addEventListener("click", loadProfileSubmissions);
-    window.loadLinyiProfileSubmissions = loadProfileSubmissions;
     window.loadLinyiVisitorProfiles = loadVisitorProfiles;
-    loadProfileSubmissions();
   }
 
 });
