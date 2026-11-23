@@ -25,6 +25,8 @@
   async function ensureSupabase() {
     if (window.linyiCreateSupabaseClient) return;
     await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
+    const identityUrl = new URL("visitor-identity.js", widgetScriptUrl).href;
+    await loadScript(identityUrl);
     const configUrl = new URL("supabase-config.js", widgetScriptUrl).href;
     await loadScript(configUrl);
     if (!window.linyiCreateSupabaseClient) {
@@ -166,15 +168,9 @@
         lastConnectError = null;
         try {
           await ensureSupabase();
-          client = window.linyiCreateSupabaseClient();
-          const { data: sessionData, error: sessionError } = await client.auth.getSession();
-          if (sessionError) throw sessionError;
-          let user = sessionData.session && sessionData.session.user;
-          if (!user) {
-            const { data, error } = await client.auth.signInAnonymously();
-            if (error) throw error;
-            user = data.user;
-          }
+          const identity = await window.linyiGetVisitorSession();
+          client = identity.client;
+          const user = identity.user;
           if (!user) throw new Error("暂时无法建立访客会话，请稍后重试。");
           const { data: existing, error: findError } = await client.from("chat_conversations")
             .select("id,status").eq("owner_id", user.id).eq("status", "open")
