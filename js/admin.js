@@ -294,6 +294,8 @@ document.addEventListener("DOMContentLoaded", () => {
         empty.textContent = "目前还没有访客留言。"; list.appendChild(empty); return;
       }
       data.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "chat-conversation-row";
         const button = document.createElement("button");
         button.type = "button";
         button.className = "chat-conversation-item" + (activeConversation?.id === item.id ? " active" : "");
@@ -302,10 +304,40 @@ document.addEventListener("DOMContentLoaded", () => {
         meta.textContent = (item.status === "open" ? "进行中" : "已结束") + " · " + new Date(item.updated_at).toLocaleString("zh-CN");
         button.append(subject, meta);
         button.addEventListener("click", () => selectConversation(item));
-        list.appendChild(button);
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "small-button delete chat-conversation-delete";
+        del.textContent = "删除";
+        del.setAttribute("aria-label", "删除此客户聊天会话");
+        del.addEventListener("click", event => { event.stopPropagation(); deleteChatConversation(item); });
+        row.append(button, del);
+        list.appendChild(row);
       });
       chatNotice("已加载 " + data.length + " 个访客会话。");
     }
+    async function deleteChatConversation(item) {
+      const label = item.subject || "网站内容交流";
+      if (!confirm("确定删除客户“" + label + "”的这条在线交流会话及其全部聊天消息吗？此操作不可撤销。")) return;
+      chatNotice("正在删除聊天记录…");
+      const { data, error } = await client.rpc("admin_delete_chat_conversation", { p_conversation_id: item.id });
+      if (error) { chatNotice("删除失败：" + error.message, "error"); return; }
+      if (activeConversation?.id === item.id) {
+        activeConversation = null;
+        title.textContent = "选择一个会话";
+        replyForm.hidden = true;
+        messages.replaceChildren();
+        const empty = document.createElement("div");
+        empty.className = "chat-empty";
+        empty.textContent = "选择左侧访客会话后，这里会显示交流内容。";
+        messages.appendChild(empty);
+        const context = document.getElementById("chatCustomerContext");
+        if (context) context.textContent = "选择客户后显示历史资料。";
+      }
+      await loadChatList();
+      chatNotice(data ? "聊天会话及消息已删除。" : "该聊天会话可能已被删除。", "success");
+      if (typeof window.loadLinyiVisitorProfiles === "function") await window.loadLinyiVisitorProfiles();
+    }
+
     async function loadCustomerContext(visitorId) {
       const panel = document.getElementById("chatCustomerContext");
       if (!panel) return;
@@ -445,11 +477,29 @@ document.addEventListener("DOMContentLoaded", () => {
         const button = document.createElement("button");
         button.type = "button"; button.className = "small-button"; button.textContent = "查看互动记录";
         button.addEventListener("click", () => loadVisitorTimeline(profile));
-        action.appendChild(button); tr.appendChild(action); rows.appendChild(tr);
+        const del = document.createElement("button");
+        del.type = "button";
+        del.className = "small-button delete";
+        del.textContent = "删除客户";
+        del.addEventListener("click", () => deleteVisitorProfile(profile));
+        action.append(button, del); tr.appendChild(action); rows.appendChild(tr);
       });
       notice.textContent = "已加载 " + (data || []).length + " 位客户（最多显示最近 200 位）。";
       const customerStat = document.getElementById("statCustomers");
       if (customerStat) customerStat.textContent = String((data || []).length);
+    }
+
+    async function deleteVisitorProfile(profile) {
+      const shortId = String(profile.id).slice(0, 8);
+      if (!confirm("确定永久删除客户 " + shortId + "… 的全部资料吗？\n\n将同时删除该客户的 AI 问答、AI 对话、在线交流会话及消息、页面访问记录和客户档案。此操作不可撤销。")) return;
+      notice.textContent = "正在删除客户及关联记录…";
+      const { data, error } = await client.rpc("admin_delete_customer", { p_visitor_id: profile.id });
+      if (error) { notice.textContent = "删除失败：" + error.message; return; }
+      if (timelinePanel) timelinePanel.hidden = true;
+      await loadVisitorProfiles();
+      if (typeof window.loadLinyiAdminChats === "function") await window.loadLinyiAdminChats();
+      if (typeof window.loadLinyiAiQaLogs === "function") await window.loadLinyiAiQaLogs();
+      notice.textContent = data ? "客户资料及关联记录已删除。" : "未找到该客户的关联记录。";
     }
 
     async function loadVisitorTimeline(profile) {
