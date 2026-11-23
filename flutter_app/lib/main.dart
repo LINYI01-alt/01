@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
+const supabaseUrl = 'https://rhmoeecrznpkhtkoktng.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJobW9lZWNyem5wa2h0a29rdG5nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ4MzU3NDgsImV4cCI6MjExMDQxMTc0OH0.lsg8L76AOoKHRGxhjJ_bglWs84fxM451XgH6ATMK4DE';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey);
   runApp(const AiCompanionApp());
 }
 
@@ -29,6 +35,11 @@ class ChatMessage {
   const ChatMessage({required this.text, required this.isUser});
   final String text;
   final bool isUser;
+
+  Map<String, String> toApiMessage() => {
+        'role': isUser ? 'user' : 'assistant',
+        'content': text,
+      };
 }
 
 class ChatPage extends StatefulWidget {
@@ -43,10 +54,32 @@ class _ChatPageState extends State<ChatPage> {
   final _scrollController = ScrollController();
   final List<ChatMessage> _messages = [
     const ChatMessage(
-      text: '你好！我是你的 AI 智能助手。你可以向我提问，之后我们还会加入文件分析和智能任务功能。',
+      text: '你好！我是你的 AI 智能助手。现在已经接入独立 GPT 后端，可以直接向我提问。',
       isUser: false,
     ),
   ];
+  bool _sending = false;
+  String? _startupError;
+
+  @override
+  void initState() {
+    super.initState();
+    _ensureSession();
+  }
+
+  Future<void> _ensureSession() async {
+    try {
+      final auth = Supabase.instance.client.auth;
+      if (auth.currentSession == null) {
+        await auth.signInAnonymously();
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _startupError = '登录初始化失败。请确认 Supabase 已开启匿名登录，然后重启 App。\n$e';
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -55,19 +88,64 @@ class _ChatPageState extends State<ChatPage> {
     super.dispose();
   }
 
-  void _sendMessage() {
+  Future<void> _sendMessage() async {
     final text = _controller.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty || _sending) return;
 
     setState(() {
       _messages.add(ChatMessage(text: text, isUser: true));
-      _messages.add(const ChatMessage(
-        text: '目前是界面演示版本，尚未连接 GPT 服务。下一步会通过安全的后端接口接入 AI，不会把 API 密钥放在手机 App 里。',
-        isUser: false,
-      ));
+      _sending = true;
+      _startupError = null;
     });
     _controller.clear();
+    _scrollToBottom();
 
+    try {
+      final auth = Supabase.instance.client.auth;
+      if (auth.currentSession == null) {
+        await auth.signInAnonymously();
+      }
+      final history = _messages
+          .where((m) => m.text != '正在思考…')
+          .toList()
+          .reversed
+          .take(12)
+          .toList()
+          .reversed
+          .map((m) => m.toApiMessage())
+          .toList();
+
+      final response = await Supabase.instance.client.functions.invoke(
+        'ai-companion-chat',
+        body: {'messages': history},
+      );
+      final data = response.data;
+      final answer = data is Map ? data['answer']?.toString() : null;
+      if (response.status < 200 || response.status >= 300 || answer == null) {
+        final error = data is Map ? data['error']?.toString() : null;
+        throw Exception(error ?? '服务返回异常（HTTP ${response.status}）');
+      }
+      if (!mounted) return;
+      setState(() {
+        _messages.add(ChatMessage(text: answer, isUser: false));
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _messages.add(ChatMessage(
+          text: '连接 GPT 失败：${e.toString().replaceFirst('Exception: ', '')}',
+          isUser: false,
+        ));
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _sending = false);
+        _scrollToBottom();
+      }
+    }
+  }
+
+  void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -76,6 +154,18 @@ class _ChatPageState extends State<ChatPage> {
           curve: Curves.easeOut,
         );
       }
+    });
+  }
+
+  void _newChat() {
+    setState(() {
+      _messages
+        ..clear()
+        ..add(const ChatMessage(
+          text: '你好！我是你的 AI 智能助手。今天有什么可以帮你？',
+          isUser: false,
+        ));
+      _startupError = null;
     });
   }
 
@@ -97,7 +187,7 @@ class _ChatPageState extends State<ChatPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('AI 智能助手', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-                Text('跨平台开发版', style: TextStyle(fontSize: 11, color: Colors.black54)),
+                Text('GPT 已接入 · 跨平台版', style: TextStyle(fontSize: 11, color: Colors.black54)),
               ],
             ),
           ],
@@ -105,14 +195,7 @@ class _ChatPageState extends State<ChatPage> {
         actions: [
           IconButton(
             tooltip: '新建对话',
-            onPressed: () => setState(() {
-              _messages
-                ..clear()
-                ..add(const ChatMessage(
-                  text: '你好！我是你的 AI 智能助手。今天有什么可以帮你？',
-                  isUser: false,
-                ));
-            }),
+            onPressed: _sending ? null : _newChat,
             icon: const Icon(Icons.add_comment_outlined),
           ),
           const SizedBox(width: 4),
@@ -120,6 +203,13 @@ class _ChatPageState extends State<ChatPage> {
       ),
       body: Column(
         children: [
+          if (_startupError != null)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              color: const Color(0xFFFFF0E8),
+              child: Text(_startupError!, style: const TextStyle(color: Colors.brown)),
+            ),
           Expanded(
             child: ListView(
               controller: _scrollController,
@@ -149,6 +239,22 @@ class _ChatPageState extends State<ChatPage> {
                   const SizedBox(height: 22),
                 ],
                 for (final message in _messages) _MessageBubble(message: message),
+                if (_sending)
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: 14),
+                      child: Chip(
+                        avatar: SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        label: Text('GPT 正在思考…'),
+                        backgroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -192,7 +298,7 @@ class _ChatPageState extends State<ChatPage> {
                   const SizedBox(width: 8),
                   IconButton.filled(
                     tooltip: '发送',
-                    onPressed: _sendMessage,
+                    onPressed: _sending ? null : _sendMessage,
                     icon: const Icon(Icons.arrow_upward),
                   ),
                 ],
