@@ -24,14 +24,17 @@
   }
 
   async function ensureSupabase() {
-    if (window.linyiCreateSupabaseClient) return;
-    await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
+    if (!window.supabase || !window.supabase.createClient) {
+      await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
+    }
     const identityUrl = new URL("visitor-identity.js", widgetScriptUrl).href;
-    await loadScript(identityUrl);
-    const configUrl = new URL("supabase-config.js", widgetScriptUrl).href;
-    await loadScript(configUrl);
+    if (!window.linyiGetVisitorSession) await loadScript(identityUrl);
     if (!window.linyiCreateSupabaseClient) {
-      throw new Error("Supabase 配置未能加载，请稍后重试。");
+      const configUrl = new URL("supabase-config.js", widgetScriptUrl).href;
+      await loadScript(configUrl);
+    }
+    if (!window.linyiGetVisitorSession || !window.linyiCreateSupabaseClient) {
+      throw new Error("访客身份服务未能加载，请刷新页面重试。");
     }
   }
 
