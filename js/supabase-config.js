@@ -17,7 +17,7 @@ window.linyiCreateSupabaseClient = function () {
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: true,
-          storageKey: "linyi-shared-visitor-session-v1"
+          storageKey: "sb-rhmoeecrznpkhtkoktng-auth-token"
         }
       }
     );
