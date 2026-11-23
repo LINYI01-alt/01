@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof window.loadLinyiAdminChats === "function") await window.loadLinyiAdminChats();
     if (typeof window.loadLinyiSiteAnalytics === "function") await window.loadLinyiSiteAnalytics();
     if (typeof window.loadLinyiAiQaLogs === "function") await window.loadLinyiAiQaLogs();
+    if (typeof window.loadLinyiVisitorProfiles === "function") await window.loadLinyiVisitorProfiles();
     return true;
   }
 
@@ -403,5 +404,91 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+
+  // Unified visitor profiles and cross-channel activity timeline.
+  const visitorProfilesSection = document.getElementById("visitorProfilesSection");
+  if (visitorProfilesSection) {
+    const rows = document.getElementById("visitorProfileRows");
+    const notice = document.getElementById("visitorProfilesNotice");
+    const timelinePanel = document.getElementById("visitorTimelinePanel");
+    const timelineTitle = document.getElementById("visitorTimelineTitle");
+    const timeline = document.getElementById("visitorTimeline");
+    const labelFor = value => ({ new: "新客户", casual: "流动客户", returning: "回访老客户", regular: "常客" }[value] || value || "未分类");
+    const dateText = value => value ? new Date(value).toLocaleString("zh-CN") : "—";
+
+    async function loadVisitorProfiles() {
+      notice.textContent = "正在加载客户档案…";
+      rows.replaceChildren();
+      const { data, error } = await client.from("visitor_profiles")
+        .select("id,classification,visit_count,first_seen,last_seen")
+        .order("last_seen", { ascending: false }).limit(200);
+      if (error) { notice.textContent = "读取失败：" + error.message; return; }
+      (data || []).forEach(profile => {
+        const tr = document.createElement("tr");
+        for (const value of [profile.id, labelFor(profile.classification), profile.visit_count, dateText(profile.first_seen), dateText(profile.last_seen)]) {
+          const td = document.createElement("td"); td.textContent = String(value); tr.appendChild(td);
+        }
+        const action = document.createElement("td");
+        const button = document.createElement("button");
+        button.type = "button"; button.className = "small-button"; button.textContent = "查看互动记录";
+        button.addEventListener("click", () => loadVisitorTimeline(profile));
+        action.appendChild(button); tr.appendChild(action); rows.appendChild(tr);
+      });
+      notice.textContent = "已加载 " + (data || []).length + " 位客户（最多显示最近 200 位）。";
+    }
+
+    async function loadVisitorTimeline(profile) {
+      timelinePanel.hidden = false;
+      timelineTitle.textContent = "客户互动时间线 · " + profile.id;
+      timeline.textContent = "正在读取 AI、人工客服和页面访问记录…";
+      const [aiResult, chatResult, pageResult] = await Promise.all([
+        client.from("ai_qa_logs").select("id,question,answer,created_at").eq("visitor_id", profile.id).order("created_at", { ascending: false }).limit(100),
+        client.from("chat_conversations").select("id,subject,status,created_at").eq("owner_id", profile.id).order("created_at", { ascending: false }).limit(100),
+        client.from("site_page_views").select("page_path,created_at").eq("visitor_id", profile.id).order("created_at", { ascending: false }).limit(200)
+      ]);
+      const errors = [aiResult.error, chatResult.error, pageResult.error].filter(Boolean);
+      if (errors.length) { timeline.textContent = "部分记录读取失败：" + errors.map(e => e.message).join("；"); return; }
+      const conversations = chatResult.data || [];
+      let humanMessages = [];
+      if (conversations.length) {
+        const messageResult = await client.from("chat_messages")
+          .select("conversation_id,sender_role,content,created_at")
+          .in("conversation_id", conversations.map(item => item.id))
+          .order("created_at", { ascending: false }).limit(300);
+        if (messageResult.error) { timeline.textContent = "人工聊天记录读取失败：" + messageResult.error.message; return; }
+        humanMessages = messageResult.data || [];
+      }
+      const items = [];
+      (aiResult.data || []).forEach(item => {
+        items.push({ at: item.created_at, type: "AI 问答", content: "访客：" + item.question + "\nAI：" + item.answer });
+      });
+      humanMessages.forEach(item => {
+        items.push({ at: item.created_at, type: item.sender_role === "visitor" ? "人工留言 · 客户" : "人工回复 · 管理员", content: item.content });
+      });
+      (pageResult.data || []).forEach(item => items.push({ at: item.created_at, type: "页面访问", content: item.page_path }));
+      items.sort((a, b) => new Date(b.at) - new Date(a.at));
+      const table = document.createElement("table"); table.className = "admin-table";
+      const head = document.createElement("thead"); const headRow = document.createElement("tr");
+      ["时间", "类型", "内容"].forEach(value => { const th = document.createElement("th"); th.textContent = value; headRow.appendChild(th); });
+      head.appendChild(headRow); table.appendChild(head);
+      const body = document.createElement("tbody");
+      items.forEach(item => {
+        const tr = document.createElement("tr");
+        for (const value of [dateText(item.at), item.type, item.content]) {
+          const td = document.createElement("td"); td.className = "content-cell"; td.textContent = value; tr.appendChild(td);
+        }
+        body.appendChild(tr);
+      });
+      if (!items.length) {
+        const tr = document.createElement("tr"); const td = document.createElement("td");
+        td.colSpan = 3; td.textContent = "该客户暂时没有已关联的 AI、人工客服或页面访问记录。";
+        tr.appendChild(td); body.appendChild(tr);
+      }
+      table.appendChild(body); timeline.replaceChildren(table);
+    }
+
+    document.getElementById("refreshVisitorProfiles").addEventListener("click", loadVisitorProfiles);
+    window.loadLinyiVisitorProfiles = loadVisitorProfiles;
+  }
 
 });
