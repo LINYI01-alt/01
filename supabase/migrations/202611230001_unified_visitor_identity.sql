@@ -5,6 +5,7 @@ create table if not exists public.visitor_profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   first_seen timestamptz not null default now(),
   last_seen timestamptz not null default now(),
+  last_visit_at timestamptz not null default now(),
   visit_count bigint not null default 0 check (visit_count >= 0),
   classification text not null default 'new'
     check (classification in ('new','casual','returning','regular')),
@@ -88,11 +89,16 @@ begin
     raise exception 'Invalid page path';
   end if;
 
-  insert into public.visitor_profiles (id, first_seen, last_seen, visit_count, classification)
-  values (v_id, now(), now(), 1, 'new')
+  insert into public.visitor_profiles (id, first_seen, last_seen, last_visit_at, visit_count, classification)
+  values (v_id, now(), now(), now(), 1, 'new')
   on conflict (id) do update
     set last_seen = now(),
-        visit_count = public.visitor_profiles.visit_count + 1,
+        visit_count = public.visitor_profiles.visit_count +
+          case when public.visitor_profiles.last_visit_at < now() - interval '30 minutes' then 1 else 0 end,
+        last_visit_at = case
+          when public.visitor_profiles.last_visit_at < now() - interval '30 minutes' then now()
+          else public.visitor_profiles.last_visit_at
+        end,
         updated_at = now()
   returning visit_count, last_seen into v_count, v_last;
 
