@@ -111,6 +111,25 @@
       </div>
 
       
+      <section class="admin-card" id="visitorProfilesSection">
+        <h2>统一客户档案</h2>
+        <p class="security-note">按 Supabase 匿名用户 UUID 识别同一浏览器访客。标签反映访问频率，不代表已验证的自然人身份。选择客户可查看 AI 问答、人工留言和页面访问时间线。</p>
+        <div class="admin-toolbar">
+          <button id="refreshVisitorProfiles" class="btn btn-outline" type="button">刷新客户档案</button>
+          <span id="visitorProfilesNotice" class="notice" role="status" aria-live="polite"></span>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>客户 UUID</th><th>客户分类</th><th>访问次数</th><th>首次访问</th><th>最近访问</th><th>操作</th></tr></thead>
+            <tbody id="visitorProfileRows"></tbody>
+          </table>
+        </div>
+        <div id="visitorTimelinePanel" hidden>
+          <h3 id="visitorTimelineTitle">客户互动时间线</h3>
+          <div id="visitorTimeline" class="admin-table-wrap"></div>
+        </div>
+      </section>
+
       <section class="admin-card" id="aiQaAdminSection">
         <h2>AI 科普问答记录</h2>
         <p class="security-note">仅管理员可查看。系统使用随机访客编号，不记录姓名、手机号或 IP。访客提问及 AI 回答会被保存用于服务质量检查；请勿在问答中提交个人身份资料、病历或检查报告。</p>
