@@ -100,6 +100,7 @@
         <button type="button" class="admin-nav-item" data-admin-tab="chatAdminSection">客户聊天</button>
         
         <button type="button" class="admin-nav-item" data-admin-tab="visitorProfilesSection">客户资料</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="aiArticlesSection">科普文章</button>
       </nav>
       <section class="admin-card admin-overview" data-admin-panel="overview">
         <div class="admin-overview-head"><div><h1>管理总览</h1><p>欢迎回来，<strong id="adminUser"></strong>。这里集中查看需要处理的事项。</p></div><button id="logoutButton" class="btn btn-outline" type="button">退出登录</button></div>
@@ -174,11 +175,19 @@
       </section>
 
       </div>
+
+      <div data-admin-panel="aiArticlesSection"><section class="admin-card" id="aiArticlesSection">
+        <h1>科普文章管理</h1>
+        <p class="security-note">审核 AI 科普文章草稿。保存修改不会公开；点击“发布”后，文章才会出现在对应主题页面。访客只能读取已发布文章。</p>
+        <div class="admin-toolbar"><label for="articleStatusFilter">文章状态：</label><select id="articleStatusFilter"><option value="all">全部</option><option value="draft" selected>草稿</option><option value="published">已发布</option></select><button id="refreshArticles" class="btn btn-outline" type="button">刷新文章</button><span id="articleAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
+        <div id="articleAdminList"></div>
+      </section></div>
 </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/admin.js"></script>
+  <script src="js/admin-articles.js"></script>
 </body>
 </html>
