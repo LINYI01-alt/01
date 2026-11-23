@@ -38,7 +38,26 @@
   function add(text,role){const p=document.createElement("p");p.className=role;p.textContent=text;messages.appendChild(p);messages.scrollTop=messages.scrollHeight;return p;}
   function greeting(){messages.replaceChildren();add("你好！我可以帮助查找一般生育健康与辅助生殖知识。不能诊断、解读个人报告、提供用药或治疗建议。请勿输入任何个人或健康隐私信息。","bot");}
   async function ensureIdentity(){
-    if(!window.linyiGetVisitorSession) throw new Error("访客身份组件未加载，请刷新页面重试。");
+    if(!window.linyiGetVisitorSession){
+      const ownScript=document.querySelector('script[src*="ai-assistant.js"]');
+      const base=ownScript&&ownScript.src?ownScript.src:new URL("js/ai-assistant.js",location.href).href;
+      const src=new URL("visitor-identity.js",base).href;
+      await new Promise((resolve,reject)=>{
+        if(window.linyiGetVisitorSession) return resolve();
+        const existing=Array.from(document.scripts).find(s=>s.src===src);
+        if(existing){
+          existing.addEventListener("load",resolve,{once:true});
+          existing.addEventListener("error",reject,{once:true});
+          return;
+        }
+        const script=document.createElement("script");
+        script.src=src;
+        script.onload=resolve;
+        script.onerror=()=>reject(new Error("访客身份组件加载失败，请刷新页面重试。"));
+        document.head.appendChild(script);
+      });
+    }
+    if(!window.linyiGetVisitorSession) throw new Error("访客身份组件未能初始化，请刷新页面重试。");
     if(!identity) identity=await window.linyiGetVisitorSession();
     return identity;
   }
