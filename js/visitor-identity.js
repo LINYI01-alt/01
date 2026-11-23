@@ -3,6 +3,7 @@
   if (window.linyiGetVisitorSession) return;
 
   let clientPromise = null;
+  let sessionPromise = null;
   let pageViewRecorded = false;
 
   function loadScript(src) {
@@ -42,17 +43,21 @@
     return clientPromise;
   }
 
-  window.linyiGetVisitorSession = async function () {
-    const client = await getClient();
-    let { data, error } = await client.auth.getSession();
-    if (error) throw error;
-    if (!data.session) {
-      const result = await client.auth.signInAnonymously();
-      if (result.error) throw result.error;
-      data = { session: result.data.session };
-    }
-    if (!data.session || !data.session.user) throw new Error("无法建立访客身份，请刷新页面重试。");
-    return { client, session: data.session, user: data.session.user };
+  window.linyiGetVisitorSession = function () {
+    if (sessionPromise) return sessionPromise;
+    sessionPromise = (async () => {
+      const client = await getClient();
+      let { data, error } = await client.auth.getSession();
+      if (error) throw error;
+      if (!data.session) {
+        const result = await client.auth.signInAnonymously();
+        if (result.error) throw result.error;
+        data = { session: result.data.session };
+      }
+      if (!data.session || !data.session.user) throw new Error("无法建立访客身份，请刷新页面重试。");
+      return { client, session: data.session, user: data.session.user };
+    })();
+    return sessionPromise.finally(() => { sessionPromise = null; });
   };
 
   window.linyiRecordPageView = async function (pagePath) {
