@@ -125,6 +125,7 @@
     let client = null;
     let conversationId = null;
     let channel = null;
+    let pollTimer = null;
     let ready = false;
     let connecting = false;
     let connectPromise = null;
@@ -163,6 +164,22 @@
       }
       messages.scrollTop = messages.scrollHeight;
     }
+
+    async function pollMessages() {
+      if (!ready || !client || !conversationId || document.hidden) return;
+      try { await loadMessages(); }
+      catch (error) { console.warn("留言轮询暂时失败", error && error.message); }
+    }
+    function startMessagePolling() {
+      if (pollTimer) return;
+      setNotice("实时通道暂不可用，已切换定时刷新；留言发送仍可使用。");
+      pollTimer = window.setInterval(pollMessages, 7000);
+      pollMessages();
+    }
+    function stopMessagePolling() {
+      if (pollTimer) window.clearInterval(pollTimer);
+      pollTimer = null;
+    }
     function connect() {
       if (ready) return Promise.resolve();
       // Share one in-flight connection between initial panel load and send click.
@@ -193,8 +210,20 @@
           send.disabled = false;
           setNotice("已连接。您发送的留言会进入现有管理员后台。");
           channel = client.channel("linyi-floating-chat-" + conversationId)
-            .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: "conversation_id=eq." + conversationId }, loadMessages)
-            .subscribe();
+            .on("postgres_changes", { event: "INSERT", schema: "public", table: "chat_messages", filter: "conversation_id=eq." + conversationId }, () => {
+              loadMessages().catch(error => console.warn("实时消息刷新失败", error));
+            })
+            .subscribe((subscriptionStatus, subscriptionError) => {
+              if (subscriptionStatus === "SUBSCRIBED") {
+                stopMessagePolling();
+                status.textContent = "实时留言已连接 · 人工客服稍后跟进";
+                setNotice("已连接。您发送的留言会进入现有管理员后台。");
+              } else if (subscriptionStatus === "CHANNEL_ERROR" || subscriptionStatus === "TIMED_OUT" || subscriptionStatus === "CLOSED") {
+                console.warn("留言实时通道不可用，启用轮询备用方案", subscriptionStatus, subscriptionError);
+                status.textContent = "留言通道备用模式";
+                startMessagePolling();
+              }
+            });
         } catch (error) {
           lastConnectError = error;
           console.error("邻伊在线交流连接失败", { message: error && error.message, code: error && error.code, status: error && error.status, details: error && error.details, hint: error && error.hint });
@@ -289,6 +318,13 @@
 
     document.addEventListener("keydown", event => {
       if (event.key === "Escape" && panel.classList.contains("open")) closePanel();
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && ready && pollTimer) pollMessages();
+    });
+    window.addEventListener("beforeunload", () => {
+      stopMessagePolling();
+      if (channel && client) client.removeChannel(channel);
     });
   }
 
