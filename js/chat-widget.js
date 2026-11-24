@@ -126,6 +126,7 @@
     let conversationId = null;
     let channel = null;
     let pollTimer = null;
+    let realtimeConnectTimer = null;
     let ready = false;
     let connecting = false;
     let connectPromise = null;
@@ -180,6 +181,10 @@
       if (pollTimer) window.clearInterval(pollTimer);
       pollTimer = null;
     }
+    function clearRealtimeConnectTimer() {
+      if (realtimeConnectTimer) window.clearTimeout(realtimeConnectTimer);
+      realtimeConnectTimer = null;
+    }
     function connect() {
       if (ready) return Promise.resolve();
       // Share one in-flight connection between initial panel load and send click.
@@ -215,15 +220,24 @@
             })
             .subscribe((subscriptionStatus, subscriptionError) => {
               if (subscriptionStatus === "SUBSCRIBED") {
+                clearRealtimeConnectTimer();
                 stopMessagePolling();
                 status.textContent = "实时留言已连接 · 人工客服稍后跟进";
                 setNotice("已连接。您发送的留言会进入现有管理员后台。");
               } else if (subscriptionStatus === "CHANNEL_ERROR" || subscriptionStatus === "TIMED_OUT" || subscriptionStatus === "CLOSED") {
+                clearRealtimeConnectTimer();
                 console.warn("留言实时通道不可用，启用轮询备用方案", subscriptionStatus, subscriptionError);
                 status.textContent = "留言通道备用模式";
                 startMessagePolling();
               }
             });
+          realtimeConnectTimer = window.setTimeout(() => {
+            if (!pollTimer) {
+              console.warn("留言实时通道连接超时，启用轮询备用方案");
+              status.textContent = "留言通道备用模式";
+              startMessagePolling();
+            }
+          }, 9000);
         } catch (error) {
           lastConnectError = error;
           console.error("邻伊在线交流连接失败", { message: error && error.message, code: error && error.code, status: error && error.status, details: error && error.details, hint: error && error.hint });
@@ -297,9 +311,10 @@
         if (error) throw error;
         input.value = "";
         count.textContent = "0";
-        await loadMessages();
+        addBubble(content, "visitor", new Date().toLocaleString("zh-CN"));
         addBubble("已收到您的留言！系统已自动确认收到，管理员查看后会在这里回复。请使用同一浏览器查看后续消息。", "system");
         setNotice("留言发送成功。");
+        loadMessages().catch(error => console.warn("留言已保存，但刷新消息列表失败", error));
       } catch (error) {
         console.error("邻伊留言发送失败", error);
         setNotice("发送失败：" + (error && error.message ? error.message : "未知错误"), true);
@@ -324,6 +339,7 @@
     });
     window.addEventListener("beforeunload", () => {
       stopMessagePolling();
+      clearRealtimeConnectTimer();
       if (channel && client) client.removeChannel(channel);
     });
   }
