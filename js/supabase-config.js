@@ -18,6 +18,14 @@ window.linyiCreateSupabaseClient = function () {
           autoRefreshToken: true,
           detectSessionInUrl: true,
           storageKey: "sb-rhmoeecrznpkhtkoktng-auth-token"
+        },
+        global: {
+          fetch: (input, init = {}) => {
+            if (init.signal || typeof AbortSignal === "undefined" || typeof AbortSignal.timeout !== "function") {
+              return fetch(input, init);
+            }
+            return fetch(input, { ...init, signal: AbortSignal.timeout(20000) });
+          }
         }
       }
     );
