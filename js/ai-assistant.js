@@ -63,10 +63,18 @@
   }
   async function api(body){
     const id=await ensureIdentity();
-    const response=await fetch(AI_URL,{method:"POST",headers:{"Content-Type":"application/json","apikey":window.LINYI_SUPABASE_PUBLISHABLE_KEY,"Authorization":"Bearer "+id.session.access_token},body:JSON.stringify(body)});
-    const raw=await response.text();let data={};try{data=raw?JSON.parse(raw):{};}catch(_){throw new Error("AI 服务返回格式异常（HTTP "+response.status+"）。");}
-    if(!response.ok)throw new Error((data.error||"请求失败")+"（HTTP "+response.status+"）");
-    return data;
+    const controller=new AbortController();
+    const timeoutId=window.setTimeout(()=>controller.abort(),45000);
+    try{
+      const response=await fetch(AI_URL,{method:"POST",headers:{"Content-Type":"application/json","apikey":window.LINYI_SUPABASE_PUBLISHABLE_KEY,"Authorization":"Bearer "+id.session.access_token},body:JSON.stringify(body),signal:controller.signal});
+      const raw=await response.text();let data={};try{data=raw?JSON.parse(raw):{};}catch(_){throw new Error("AI 服务返回格式异常（HTTP "+response.status+"）。");}
+      if(!response.ok)throw new Error((data.error||"请求失败")+"（HTTP "+response.status+"）");
+      return data;
+    }catch(error){
+      if(error&&error.name==="AbortError")throw new Error("AI 服务响应超过 45 秒，已停止等待。请稍后重试。");
+      if(error instanceof TypeError)throw new Error("无法连接 AI 服务，请检查网络后重试。");
+      throw error;
+    }finally{window.clearTimeout(timeoutId);}
   }
   function renderConversation(logs){
     history=[];messages.replaceChildren();
@@ -109,7 +117,8 @@
       try{localStorage.setItem(key,conversationId);}catch(_){}
       history.push({role:"user",content:question},{role:"assistant",content:result.answer});
       status.textContent="已自动保存";
-      await loadHistory();
+      try{await loadHistory();}
+      catch(historyError){status.textContent="回答已返回，历史同步暂时失败";}
     }catch(error){waiting.textContent=error.message||"连接失败，请稍后重试。";}
     finally{send.disabled=false;input.focus();}
   });
