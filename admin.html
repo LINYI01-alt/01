@@ -132,6 +132,10 @@
     #visitorProfilesSection .small-button{border-radius:8px;padding:7px 12px;margin-right:5px}
     #visitorTimelinePanel{margin-top:24px;padding:22px;background:#f8faf8;border:1px solid #e6ede8;border-radius:14px}
     #visitorTimelineTitle{font-size:18px;color:#204634;margin-bottom:14px;overflow-wrap:anywhere}
+
+    .customer-summary-strip{padding:13px 15px;background:#f0f6f2;border:1px solid #e0ebe3;border-radius:10px;color:#496454;font-size:13px;line-height:1.7;margin:12px 0}
+    .customer-detail-tabs{border-bottom:1px solid #e6ece8;padding-bottom:10px}
+    .customer-detail-pane[hidden]{display:none!important}
     .customer-detail-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
     .customer-detail-tab{border:1px solid #dfe8e1;background:#fff;color:#52645a;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:650;cursor:pointer}
     .customer-detail-tab.active{background:#245b43;border-color:#245b43;color:#fff}
@@ -193,7 +197,8 @@
         <button type="button" class="admin-nav-item active" data-admin-tab="visitorProfilesSection"><span>01</span>客户管理</button>
         <button type="button" class="admin-nav-item" data-admin-tab="chatAdminSection"><span>02</span>客服对话</button>
         <button type="button" class="admin-nav-item" data-admin-tab="aiArticlesSection"><span>03</span>文章管理</button>
-        <button type="button" class="admin-nav-item" data-admin-tab="overview"><span>04</span>管理概览</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="submissionsSection"><span>04</span>投稿审核</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="overview"><span>05</span>管理概览</button>
       </nav>
       <section class="admin-card admin-overview" data-admin-panel="overview">
         <div class="admin-overview-head"><div><h1>管理总览</h1><p>欢迎回来，<strong id="adminUser"></strong>。这里集中查看需要处理的事项。</p></div><button id="logoutButton" class="btn btn-outline" type="button">退出登录</button></div>
@@ -231,23 +236,6 @@
       <div data-admin-panel="visitorProfilesSection"><section class="admin-card" id="visitorProfilesSection">
         <div class="workspace-heading"><div><span class="admin-eyebrow">CUSTOMER DIRECTORY</span><h2>客户管理</h2><p>每位客户一份档案。先选择客户，再查看访问记录、AI 对话或人工客服聊天。</p></div><button id="refreshVisitorProfiles" class="btn btn-outline" type="button">刷新客户</button></div>
         <div class="customer-toolbar"><span class="customer-toolbar-title">全部客户</span><span id="visitorProfilesNotice" class="notice" role="status" aria-live="polite"></span></div>
-        <h2>客户投稿</h2>
-        <p class="security-note">在这里查看、通过或退回客户投稿，并管理投稿记录。</p>
-        <div class="admin-card submission-admin-card">
-        <h1>客户投稿</h1>
-        <p>集中查看客户投稿并完成审核。</p>
-        <div class="admin-toolbar">
-          <label for="statusFilter">审核状态：</label>
-          <select id="statusFilter">
-            <option value="all">全部</option>
-            <option value="pending" selected>待审核</option>
-            <option value="approved">已通过</option>
-            <option value="rejected">已退回</option>
-          </select>
-          <button id="refreshSubmissions" class="btn btn-outline" type="button">刷新</button>
-          
-        </div>
-        <p id="dashboardMessage" class="notice" role="status" aria-live="polite"></p>
         <div class="admin-table-wrap">
           <table class="admin-table">
             <thead><tr><th>投稿信息</th><th>内容</th><th>联系方式</th><th>状态</th><th>操作</th></tr></thead>
@@ -270,7 +258,23 @@
 
       </div>
 
-      <div data-admin-panel="aiArticlesSection"><section class="admin-card" id="aiArticlesSection">
+<div data-admin-panel="submissionsSection"><section class="admin-card submission-admin-card"><div class="workspace-heading"><div><span class="admin-eyebrow">SUBMISSIONS</span><h2>客户投稿审核</h2><p>集中查看、通过或退回客户投稿。</p></div></div><div class="admin-card submission-admin-card">
+        <h1>客户投稿</h1>
+        <p>集中查看客户投稿并完成审核。</p>
+        <div class="admin-toolbar">
+          <label for="statusFilter">审核状态：</label>
+          <select id="statusFilter">
+            <option value="all">全部</option>
+            <option value="pending" selected>待审核</option>
+            <option value="approved">已通过</option>
+            <option value="rejected">已退回</option>
+          </select>
+          <button id="refreshSubmissions" class="btn btn-outline" type="button">刷新</button>
+          
+        </div>
+        <p id="dashboardMessage" class="notice" role="status" aria-live="polite"></p>
+</section></div>
+            <div data-admin-panel="aiArticlesSection"><section class="admin-card" id="aiArticlesSection">
         <div class="workspace-heading"><div><span class="admin-eyebrow">CONTENT</span><h2>文章管理</h2></div></div>
         <p class="security-note">审核 AI 科普文章草稿。保存修改不会公开；点击“发布”后，文章才会出现在对应主题页面。访客只能读取已发布文章。</p>
         <div class="admin-toolbar"><label for="articleStatusFilter">文章状态：</label><select id="articleStatusFilter"><option value="all">全部</option><option value="draft" selected>草稿</option><option value="published">已发布</option></select><button id="refreshArticles" class="btn btn-outline" type="button">刷新文章</button><span id="articleAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
@@ -281,8 +285,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
-  <script src="js/admin.js?v=20261126b"></script>
-  <script src="js/admin-chat-tools.js?v=20261126b"></script>
+  <script src="js/admin.js?v=20261126c"></script>
+  <script src="js/admin-chat-tools.js?v=20261126c"></script>
   <script src="js/admin-articles.js"></script>
 </body>
 </html>
