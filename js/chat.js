@@ -47,6 +47,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const { data, error } = await client.from("chat_messages")
       .select("id,sender_role,content,created_at")
       .eq("conversation_id", conversationId)
+      .in("sender_role", ["visitor", "admin"])
       .order("created_at", { ascending: true });
     if (error) { setNotice("读取消息失败，请刷新页面后重试。", "error"); return; }
     messagesBox.replaceChildren();
