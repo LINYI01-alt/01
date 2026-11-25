@@ -210,11 +210,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (error) { setAiQaNotice("读取失败：" + error.message, "error"); return; }
       if (!data || !data.length) {
         const tr = document.createElement("tr");
-        const td = document.createElement("td"); td.colSpan = 5; td.textContent = "暂时没有 AI 问答记录。";
+        const td = document.createElement("td"); td.colSpan = 4; td.textContent = "暂时没有 AI 问答记录。";
         tr.appendChild(td); aiQaRows.appendChild(tr);
       } else data.forEach(item => {
         const tr = document.createElement("tr");
-        for (const value of [new Date(item.created_at).toLocaleString("zh-CN"), String(item.visitor_id).slice(0, 8), item.question, item.answer]) {
+        for (const value of [String(item.visitor_id || "").slice(0, 5), new Date(item.created_at).toLocaleString("zh-CN"), "客户提问：\n" + (item.question || "") + "\n\n邻伊 AI 回答：\n" + (item.answer || "")]) {
           const td = document.createElement("td"); td.className = "content-cell"; td.textContent = value || ""; tr.appendChild(td);
         }
         const action = document.createElement("td");
@@ -296,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
       list.replaceChildren();
       if (!humanConversations.length) {
         const empty = document.createElement("p"); empty.className = "chat-empty";
-        empty.textContent = "目前还没有客户与人工客服之间的聊天记录。AI 问答请在客户资料中单独查看。"; list.appendChild(empty); return;
+        empty.textContent = "目前还没有在线交流消息。"; list.appendChild(empty); return;
       }
       humanConversations.forEach(item => {
         const row = document.createElement("div");
@@ -304,9 +304,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "chat-conversation-item" + (activeConversation?.id === item.id ? " active" : "");
-        const subject = document.createElement("strong"); subject.textContent = (item.subject || "网站内容交流") + ((unreadByConversation.has(item.id) ? "　● 未读" : "") + (pendingByConversation.has(item.id) ? "　待回复" : ""));
+        const subject = document.createElement("strong"); subject.textContent = "在线交流" + (unreadByConversation.has(item.id) ? "　未读" : "");
         const meta = document.createElement("small");
-        meta.textContent = "客户 UUID：" + String(item.owner_id || "未知").slice(0, 5) + " · " + (item.status === "open" ? "进行中" : "已结束") + " · " + new Date(item.updated_at).toLocaleString("zh-CN");
+        meta.textContent = "ID：" + String(item.owner_id || "未知").slice(0, 5) + " · " + new Date(item.updated_at).toLocaleString("zh-CN");
         button.append(subject, meta);
         button.addEventListener("click", () => selectConversation(item));
         const del = document.createElement("button");
@@ -318,22 +318,22 @@ document.addEventListener("DOMContentLoaded", () => {
         row.append(button, del);
         list.appendChild(row);
       });
-      chatNotice("已加载 " + data.length + " 个访客会话。");
+      chatNotice("已加载 " + humanConversations.length + " 个在线交流。");
     }
     async function deleteChatConversation(item) {
-      const label = item.subject || "网站内容交流";
+      const label = "在线交流";
       if (!confirm("确定删除客户“" + label + "”的这条在线交流会话及其全部聊天消息吗？此操作不可撤销。")) return;
       chatNotice("正在删除聊天记录…");
       const { data, error } = await client.rpc("admin_delete_chat_conversation", { p_conversation_id: item.id });
       if (error) { chatNotice("删除失败：" + error.message, "error"); return; }
       if (activeConversation?.id === item.id) {
         activeConversation = null;
-        title.textContent = "选择一个会话";
+        title.textContent = "选择一个在线交流";
         replyForm.hidden = true;
         messages.replaceChildren();
         const empty = document.createElement("div");
         empty.className = "chat-empty";
-        empty.textContent = "选择左侧访客会话后，这里会显示交流内容。";
+        empty.textContent = "选择左侧在线交流后显示聊天内容。";
         messages.appendChild(empty);
         const context = document.getElementById("chatCustomerContext");
         if (context) context.textContent = "选择客户后显示历史资料。";
@@ -344,14 +344,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function loadCustomerContext(visitorId) {
-      const panel = document.getElementById("chatCustomerContext"); if (!panel) return; panel.replaceChildren();
-      const heading = document.createElement("h3"); heading.textContent = "当前客户身份"; panel.appendChild(heading);
-      if (!visitorId) { panel.appendChild(document.createTextNode("此会话暂未关联客户档案。")); return; }
-      const idLine = document.createElement("p"); idLine.textContent = "客户 UUID 前五位：" + String(visitorId).slice(0, 5); panel.appendChild(idLine);
-      const { data, error } = await client.from("visitor_profiles").select("visit_count,first_seen,last_seen").eq("id", visitorId).maybeSingle();
-      if (error) { const p = document.createElement("p"); p.textContent = "客户档案摘要暂时无法读取。"; panel.appendChild(p); return; }
-      if (data) { const p = document.createElement("p"); p.textContent = "访问次数：" + data.visit_count + " · 首次访问：" + new Date(data.first_seen).toLocaleString("zh-CN") + " · 最近访问：" + new Date(data.last_seen).toLocaleString("zh-CN"); panel.appendChild(p); }
-      const note = document.createElement("p"); note.className = "security-note"; note.textContent = "这里只显示客户身份摘要。网站访问记录和 AI 对话请到“客户资料”中分开展示；本聊天窗口只包含客户与人工客服消息。"; panel.appendChild(note);
+      const panel = document.getElementById("chatCustomerContext"); if (!panel) return;
+      panel.replaceChildren();
+      const heading = document.createElement("h3"); heading.textContent = "AI对话内容"; panel.appendChild(heading);
+      if (!visitorId) { const p = document.createElement("p"); p.textContent = "该在线交流暂未关联客户 AI 历史。"; panel.appendChild(p); return; }
+      const { data, error } = await client.from("ai_qa_logs").select("question,answer,created_at").eq("visitor_id", visitorId).order("created_at", { ascending: false }).limit(100);
+      if (error) { const p = document.createElement("p"); p.textContent = "AI 对话读取失败：" + error.message; panel.appendChild(p); return; }
+      if (!data || !data.length) { const p = document.createElement("p"); p.textContent = "该客户暂无 AI 对话。"; panel.appendChild(p); return; }
+      data.forEach(item => { const row = document.createElement("div"); row.className = "chat-ai-history-item"; const time = document.createElement("small"); time.textContent = new Date(item.created_at).toLocaleString("zh-CN"); const body = document.createElement("div"); body.textContent = "客户提问：\n" + (item.question || "") + "\n\nAI回答：\n" + (item.answer || ""); row.append(time, body); panel.appendChild(row); });
     }
     async function loadChatMessages() {
       if (!activeConversation) return;
@@ -369,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
         row.className = "chat-message " + (item.sender_role === "visitor" ? "from-visitor" : "from-admin");
         row.dataset.sender = item.sender_role;
         const who = document.createElement("small");
-        const senderLabel = item.sender_role === "admin" ? "邻伊人工客服" : item.sender_role === "ai" ? "邻伊 AI" : "访客";
+        const senderLabel = item.sender_role === "admin" ? "客服" : "客户";
         who.textContent = senderLabel + " · " + new Date(item.created_at).toLocaleString("zh-CN");
         const body = document.createElement("p"); body.textContent = item.content;
         row.append(who, body); messages.appendChild(row);
@@ -380,7 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
       activeConversation = item;
       const { error: readError } = await client.from("chat_conversations").update({ admin_last_read_at: new Date().toISOString() }).eq("id", item.id);
       if (readError) chatNotice("已打开会话，但已读状态保存失败：" + readError.message, "error");
-      title.textContent = (item.subject || "网站内容交流") + (item.status === "open" ? " · 进行中" : " · 已结束");
+      title.textContent = "在线交流";
       replyForm.hidden = item.status !== "open";
       await loadChatList(); await loadChatMessages();
       await loadCustomerContext(item.owner_id);
@@ -453,19 +453,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (error) { notice.textContent = "读取失败：" + error.message; return; }
       (data || []).forEach(profile => {
         const tr = document.createElement("tr");
-        for (const value of [profile.id, labelFor(profile.classification), profile.visit_count, dateText(profile.first_seen), dateText(profile.last_seen)]) {
-          const td = document.createElement("td"); td.textContent = String(value); tr.appendChild(td);
-        }
+        const values = [String(profile.id).slice(0, 5), labelFor(profile.classification), profile.visit_count, dateText(profile.first_seen), dateText(profile.last_seen)];
+        values.forEach((value, index) => { const td = document.createElement("td"); td.textContent = String(value); if (index === 0) td.className = "customer-id"; tr.appendChild(td); });
         const action = document.createElement("td");
         const button = document.createElement("button");
-        button.type = "button"; button.className = "small-button"; button.textContent = "查看互动记录";
-        button.addEventListener("click", () => loadVisitorTimeline(profile));
-        const del = document.createElement("button");
-        del.type = "button";
-        del.className = "small-button delete";
-        del.textContent = "删除客户";
-        del.addEventListener("click", () => deleteVisitorProfile(profile));
-        action.append(button, del); tr.appendChild(action); rows.appendChild(tr);
+        button.type = "button"; button.className = "customer-content-button"; button.textContent = "查看内容";
+        button.addEventListener("click", async () => { await loadVisitorTimeline(profile); activateAdminPanel("customerDetailsSection"); const empty = document.getElementById("customerDetailsEmpty"); if (empty) empty.hidden = true; });
+        action.appendChild(button); tr.appendChild(action); rows.appendChild(tr);
       });
       notice.textContent = "已加载 " + (data || []).length + " 位客户（最多显示最近 200 位）。";
       const customerStat = document.getElementById("statCustomers");
@@ -473,7 +467,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function deleteVisitorProfile(profile) {
-      const shortId = String(profile.id).slice(0, 8);
+      const shortId = String(profile.id).slice(0, 5);
       if (!confirm("确定永久删除客户 " + shortId + "… 的全部资料吗？\n\n将同时删除该客户的 AI 问答、AI 对话、在线交流会话及消息、页面访问记录和客户档案。此操作不可撤销。")) return;
       notice.textContent = "正在删除客户及关联记录…";
       const { data, error } = await client.rpc("admin_delete_customer", { p_visitor_id: profile.id });
@@ -486,44 +480,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function loadVisitorTimeline(profile) {
-      timelinePanel.hidden = false; timelineTitle.textContent = "客户档案 · " + profile.id; timeline.replaceChildren();
-      const intro = document.createElement("p"); intro.className = "security-note"; intro.textContent = "统一客户编号（Supabase 用户 ID）：" + profile.id + "。身份统一，记录分开查看。"; timeline.appendChild(intro);
+      timelinePanel.hidden = false; timelineTitle.textContent = "客户详细 · ID " + String(profile.id).slice(0, 5); timeline.replaceChildren();
       const results = await Promise.all([
-        client.from("visitor_profiles").select("classification,visit_count,first_seen,last_seen").eq("id", profile.id).maybeSingle(),
-        client.from("ai_qa_logs").select("question,answer,created_at").eq("visitor_id", profile.id).order("created_at", { ascending: false }).limit(500),
-        client.from("site_page_views").select("page_path,created_at").eq("visitor_id", profile.id).order("created_at", { ascending: false }).limit(500),
-        client.from("chat_conversations").select("id,subject,status").eq("owner_id", profile.id).limit(20)
+        client.from("visitor_profiles").select("id,classification,visit_count,first_seen,last_seen").eq("id", profile.id).maybeSingle(),
+        client.from("ai_qa_logs").select("question,answer,created_at").eq("visitor_id", profile.id).order("created_at", { ascending: true }).limit(500),
+        client.from("site_page_views").select("page_path,created_at").eq("visitor_id", profile.id).order("created_at", { ascending: true }).limit(500),
+        client.from("chat_conversations").select("id,subject,status").eq("owner_id", profile.id).limit(50)
       ]);
       const [profileResult, aiResult, pageResult, conversationResult] = results;
       const errors = results.map(item => item.error).filter(Boolean);
       if (errors.length) { const p = document.createElement("p"); p.textContent = "部分记录读取失败：" + errors.map(item => item.message).join("；"); timeline.appendChild(p); }
-      const summary = document.createElement("div"); summary.className = "customer-summary-strip";
-      summary.textContent = profileResult.data ? "访问 " + profileResult.data.visit_count + " 次　·　首次 " + dateText(profileResult.data.first_seen) + "　·　最近 " + dateText(profileResult.data.last_seen) : "客户档案摘要暂不可用。"; timeline.appendChild(summary);
-      const tabs = document.createElement("div"); tabs.className = "customer-detail-tabs";
-      const panes = document.createElement("div"); panes.className = "customer-detail-panes";
-      const makePane = (key, label, description, items, render, emptyText) => {
-        const button = document.createElement("button"); button.type = "button"; button.className = "customer-detail-tab"; button.textContent = label + "（" + items.length + "）";
-        const pane = document.createElement("section"); pane.className = "customer-detail-pane"; pane.hidden = true;
-        const note = document.createElement("p"); note.className = "security-note"; note.textContent = description; pane.appendChild(note);
-        if (!items.length) { const empty = document.createElement("p"); empty.className = "chat-empty"; empty.textContent = emptyText; pane.appendChild(empty); }
-        else {
-          const table = document.createElement("table"); table.className = "admin-table"; const body = document.createElement("tbody");
-          items.forEach(item => { const row = document.createElement("tr"); const time = document.createElement("td"); time.textContent = dateText(item.created_at); time.style.width = "185px"; const content = document.createElement("td"); content.textContent = render(item); row.append(time, content); body.appendChild(row); });
-          table.appendChild(body); pane.appendChild(table);
-        }
-        button.addEventListener("click", () => { tabs.querySelectorAll("button").forEach(x => x.classList.remove("active")); panes.querySelectorAll("section").forEach(x => x.hidden = true); button.classList.add("active"); pane.hidden = false; });
-        tabs.appendChild(button); panes.appendChild(pane); return button;
-      };
-      makePane("visits", "访问记录", "客户访问过的网站页面和时间。", pageResult.data || [], item => item.page_path, "这位客户还没有网站访问记录。");
-      makePane("ai", "AI 对话", "点击客户的每条提问记录，即可阅读当时邻伊 AI 的完整回答。", aiResult.data || [], item => "客户提问：\n" + (item.question || "") + "\n\n邻伊 AI 回复：\n" + (item.answer || ""), "这位客户还没有 AI 对话记录。");
-      const conversations = conversationResult.data || []; let humanRows = [];
+      const p = profileResult.data || profile;
+      const summary = document.createElement("div"); summary.className = "customer-detail-summary";
+      const summaryItems = [
+        ["ID", String(p.id).slice(0, 5)],
+        ["时间", dateText(p.last_seen)],
+        ["次数", String(p.visit_count || 0)],
+        ["客户分类", labelFor(p.classification)]
+      ];
+      summaryItems.forEach(([label, value]) => { const item = document.createElement("div"); const small = document.createElement("small"); small.textContent = label; const strong = document.createElement("strong"); strong.textContent = value; item.append(small, strong); summary.appendChild(item); });
+      timeline.appendChild(summary);
+      const sourceSection = document.createElement("section"); sourceSection.className = "customer-detail-section";
+      const sourceTitle = document.createElement("h4"); sourceTitle.textContent = "访问形式"; sourceSection.appendChild(sourceTitle);
+      const paths = pageResult.data || [];
+      if (!paths.length) { const note = document.createElement("p"); note.textContent = "暂无访问来源记录。"; sourceSection.appendChild(note); }
+      else paths.forEach(item => { const line = document.createElement("div"); line.className = "customer-content-item"; const time = document.createElement("small"); time.className = "customer-content-time"; time.textContent = dateText(item.created_at); const value = document.createElement("div"); value.textContent = "网站访问 · " + (item.page_path || "页面路径未记录"); line.append(time, value); sourceSection.appendChild(line); });
+      timeline.appendChild(sourceSection);
+      const contentSection = document.createElement("section"); contentSection.className = "customer-detail-section";
+      const contentTitle = document.createElement("h4"); contentTitle.textContent = "内容（客服对话 + AI对话）"; contentSection.appendChild(contentTitle);
+      const contentItems = [];
+      (aiResult.data || []).forEach(item => contentItems.push({ time: item.created_at, type: "AI对话", content: "客户提问：\n" + (item.question || "") + "\n\n邻伊 AI 回答：\n" + (item.answer || "") }));
+      const conversations = conversationResult.data || [];
       if (conversations.length) {
-        const result = await client.from("chat_messages").select("conversation_id,sender_role,content,created_at").in("conversation_id", conversations.map(item => item.id)).in("sender_role", ["visitor", "admin"]).order("created_at", { ascending: false }).limit(1000);
-        if (result.error) { const p = document.createElement("p"); p.textContent = "人工客服记录读取失败：" + result.error.message; timeline.appendChild(p); }
-        else humanRows = (result.data || []).map(item => ({ created_at: item.created_at, content: (item.sender_role === "visitor" ? "客户：" : "客服：") + item.content }));
+        const messageResult = await client.from("chat_messages").select("sender_role,content,created_at,conversation_id").in("conversation_id", conversations.map(item => item.id)).in("sender_role", ["visitor", "admin"]).order("created_at", { ascending: true }).limit(2000);
+        if (messageResult.error) { const p = document.createElement("p"); p.textContent = "客服聊天读取失败：" + messageResult.error.message; contentSection.appendChild(p); }
+        else (messageResult.data || []).forEach(item => contentItems.push({ time: item.created_at, type: item.sender_role === "admin" ? "人工客服" : "客户", content: item.content }));
       }
-      makePane("support", "客服聊天", "仅显示客户与人工客服的双向消息，与 AI 对话完全分开。", humanRows, item => item.content, "这位客户还没有人工客服聊天记录。");
-      const firstTab = tabs.querySelector("button"); if (firstTab) firstTab.click();
+      contentItems.sort((a,b) => new Date(a.time) - new Date(b.time));
+      if (!contentItems.length) { const empty = document.createElement("p"); empty.textContent = "暂无 AI 或人工客服对话内容。"; contentSection.appendChild(empty); }
+      contentItems.forEach(item => { const row = document.createElement("div"); row.className = "customer-content-item"; const time = document.createElement("small"); time.className = "customer-content-time"; time.textContent = dateText(item.time) + " · " + item.type; const body = document.createElement("div"); body.textContent = item.content; row.append(time, body); contentSection.appendChild(row); });
+      timeline.append(contentSection);
+      const del = document.createElement("button"); del.type = "button"; del.className = "small-button delete"; del.textContent = "删除客户及全部记录"; del.addEventListener("click", () => deleteVisitorProfile(profile)); timeline.appendChild(del);
+      const empty = document.getElementById("customerDetailsEmpty"); if (empty) empty.hidden = true;
     }
     document.getElementById("refreshVisitorProfiles").addEventListener("click", loadVisitorProfiles);
     window.loadLinyiVisitorProfiles = loadVisitorProfiles;
