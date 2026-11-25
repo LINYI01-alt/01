@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const row = document.createElement("div");
     row.className = "chat-message " + (item.sender_role === "visitor" ? "from-visitor" : "from-admin");
     const who = document.createElement("small");
-    who.textContent = item.sender_role === "visitor" ? "我 · " : "邻伊管理员 · ";
+    who.textContent = item.sender_role === "visitor" ? "我 · " : item.sender_role === "ai" ? "邻伊 AI · " : "邻伊人工客服 · ";
     who.textContent += new Date(item.created_at).toLocaleString("zh-CN");
     const body = document.createElement("p");
     body.textContent = item.content;
@@ -75,15 +75,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     if (!user) throw new Error("暂时无法建立访客会话，请稍后刷新。");
     const { data: existing, error: findError } = await client.from("chat_conversations")
-      .select("id,status").eq("owner_id", user.id).eq("status", "open")
-      .order("updated_at", { ascending: false }).limit(1);
+      .select("id,status").eq("owner_id", user.id).maybeSingle();
     if (findError) throw findError;
-    if (existing && existing.length) conversationId = existing[0].id;
-    else {
+    if (existing) {
+      conversationId = existing.id;
+      if (existing.status !== "open") {
+        const { error: reopenError } = await client.from("chat_conversations")
+          .update({ status: "open", updated_at: new Date().toISOString() }).eq("id", conversationId);
+        if (reopenError) throw reopenError;
+      }
+    } else {
       const { data: created, error: createError } = await client.from("chat_conversations")
-        .insert({ owner_id: user.id, subject: "网站内容交流" }).select("id").single();
-      if (createError) throw createError;
-      conversationId = created.id;
+        .insert({ owner_id: user.id, subject: "邻伊 AI 统一咨询" }).select("id").single();
+      if (createError?.code === "23505") {
+        const { data: raced, error: raceError } = await client.from("chat_conversations")
+          .select("id").eq("owner_id", user.id).single();
+        if (raceError || !raced) throw createError;
+        conversationId = raced.id;
+      } else if (createError) throw createError;
+      else conversationId = created.id;
     }
     await loadMessages();
     status.textContent = "已连接";
