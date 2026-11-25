@@ -98,7 +98,7 @@
     historyBox.replaceChildren();
     const btn=document.createElement("button");
     btn.type="button";btn.className="linyi-ai-history-item";
-    btn.textContent="查看统一聊天记录 · "+logs.length+" 条消息";
+    btn.textContent="查看 AI 历史记录 · "+logs.length+" 条消息";
     btn.addEventListener("click",()=>{renderConversation(logs);historyBox.classList.remove("open");status.textContent="已同步完整聊天记录";});
     historyBox.appendChild(btn);
     renderConversation(logs);
@@ -106,7 +106,7 @@
   }
   launcher.addEventListener("click",async()=>{panel.classList.toggle("open");if(panel.classList.contains("open")&&!historyLoaded){try{await loadHistory();}catch(e){status.textContent="同步失败";greeting();add(e.message,"bot");}}});
   panel.querySelector("#linyi-ai-head button").addEventListener("click",()=>panel.classList.remove("open"));
-  panel.querySelector("#linyi-ai-new").addEventListener("click",async()=>{try{await loadHistory();historyBox.classList.remove("open");status.textContent="已恢复唯一聊天会话";input.focus();}catch(e){status.textContent="同步失败";add(e.message,"bot");}});
+  panel.querySelector("#linyi-ai-new").addEventListener("click",async()=>{try{await loadHistory();historyBox.classList.remove("open");status.textContent="已恢复 AI 历史记录";input.focus();}catch(e){status.textContent="同步失败";add(e.message,"bot");}});
   panel.querySelector("#linyi-ai-history-toggle").addEventListener("click",()=>historyBox.classList.toggle("open"));
   form.addEventListener("submit",async event=>{
     event.preventDefault();const question=input.value.trim();if(!question)return;
