@@ -159,6 +159,56 @@
       #visitorTimelinePanel{padding:12px}
     }
 
+
+    body{background:#f4f7f5}
+    .admin-wrap{max-width:1480px;margin:22px auto;padding:0 22px 60px}
+    .admin-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;padding:8px;margin:0 0 20px;background:#eaf0ec;border:1px solid #dfe8e2;border-radius:14px}
+    .admin-nav-item{display:flex;align-items:center;justify-content:center;gap:9px;padding:14px 8px;border:0;border-radius:9px;background:transparent;color:#607168;font-weight:650;cursor:pointer}
+    .admin-nav-item span{font-size:10px;color:#95a39b}
+    .admin-nav-item.active{background:#fff;color:#24543d;box-shadow:0 2px 9px #183d3212}
+    .admin-card{border:1px solid #e5ece7;border-radius:15px;background:#fff;padding:22px;box-shadow:0 4px 20px #1d49310a}
+    .workspace-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+    .workspace-heading h2{margin:0;color:#204936;font-size:22px}
+    .workspace-heading p{margin:5px 0 0;color:#77867d;font-size:13px}
+    .customer-toolbar{display:flex;align-items:center;justify-content:space-between;margin:12px 0}
+    .admin-table-wrap{overflow:auto;border:1px solid #e7ede9;border-radius:10px}
+    .admin-table{width:100%;border-collapse:collapse}
+    .admin-table th{background:#f5f8f6;color:#63736a;font-weight:650}
+    .admin-table th,.admin-table td{padding:12px 13px;text-align:left;border-bottom:1px solid #edf1ee;vertical-align:top}
+    .admin-table td{line-height:1.7;overflow-wrap:anywhere}
+    .customer-id{font-family:ui-monospace,monospace;font-weight:700;color:#315d47}
+    .customer-content-button{padding:7px 13px;border:1px solid #d7e5db;border-radius:8px;background:#f4f8f5;color:#24543d;cursor:pointer}
+    #customerDetailsSection #visitorTimelinePanel{margin-top:10px}
+    #visitorTimelineTitle{font-size:19px;color:#244d39}
+    .customer-detail-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}
+    .customer-detail-summary>div{padding:12px;background:#f5f8f6;border-radius:9px}
+    .customer-detail-summary small{display:block;color:#7b8981;margin-bottom:5px}
+    .customer-detail-summary strong{font-size:13px;overflow-wrap:anywhere}
+    .customer-detail-section{margin:14px 0;padding:15px;border:1px solid #e6ece8;border-radius:11px}
+    .customer-detail-section h4{margin:0 0 10px;color:#28513d}
+    .customer-content-item{padding:12px 0;border-bottom:1px solid #edf1ee;white-space:pre-wrap;overflow-wrap:anywhere}
+    .customer-content-item:last-child{border-bottom:0}
+    .customer-content-time{display:block;margin-bottom:6px;color:#89958e;font-size:12px}
+    .chat-admin-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:15px}
+    #chatAdminSection .chat-admin-list{padding:14px;background:#f7f9f7;border:1px solid #e7ede9;border-radius:11px}
+    #chatAdminSection .chat-admin-detail{display:flex;flex-direction:column;min-height:680px;padding:15px;border:1px solid #e7ede9;border-radius:11px}
+    #chatAdminSection .chat-admin-detail>h3{margin:0 0 12px}
+    #chatAdminSection .chat-admin-messages{display:flex;flex:1;flex-direction:column;gap:12px;min-height:380px;max-height:600px;overflow:auto;padding:16px;background:#fafcfa;border:1px solid #e8eeea;border-radius:9px}
+    #chatAdminSection .chat-message{max-width:82%;padding:11px 14px}
+    #chatAdminSection .chat-message small{display:block;margin-bottom:6px;color:#819087;font-size:11px}
+    #chatAdminSection .chat-message p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75}
+    .chat-ai-history{margin-top:14px;padding:14px;background:#f6f9f7;border:1px solid #e6ece8;border-radius:10px;max-height:320px;overflow:auto}
+    .chat-ai-history h3{margin:0 0 10px;color:#315640;font-size:15px}
+    .chat-ai-history-item{padding:9px 0;border-bottom:1px solid #e7ede9;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;line-height:1.7}
+    .chat-ai-history-item small{display:block;color:#87948c;margin-bottom:4px}
+    .chat-conversation-item strong{display:block}
+    .chat-conversation-item small{display:block;margin-top:5px;color:#7b8981}
+    .chat-unread-badge{display:inline-block;margin-left:7px;padding:2px 7px;border-radius:20px;background:#fff0ee;color:#bb4238;font-size:11px}
+    .submission-admin-card{margin-top:20px;padding-top:16px;border-top:1px solid #e8eeea}
+    .submission-admin-card h3{margin:0 0 10px;color:#28513d}
+    [data-admin-panel][hidden]{display:none!important}
+    @media(max-width:800px){.admin-wrap{padding:0 11px 40px}.admin-nav{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-card{padding:14px}.chat-admin-layout{grid-template-columns:1fr}.customer-detail-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.workspace-heading{align-items:flex-start;flex-direction:column}}
+
   </style>
 </head>
 <body>
@@ -194,99 +244,95 @@
         <div class="admin-account"><span id="adminUser"></span><button id="logoutButton" class="btn btn-outline" type="button">退出</button></div>
       </div>
       <nav class="admin-nav" aria-label="管理员功能导航">
-        <button type="button" class="admin-nav-item active" data-admin-tab="visitorProfilesSection"><span>01</span>客户管理</button>
-        <button type="button" class="admin-nav-item" data-admin-tab="chatAdminSection"><span>02</span>客服对话</button>
-        <button type="button" class="admin-nav-item" data-admin-tab="aiArticlesSection"><span>03</span>文章管理</button>
-        <button type="button" class="admin-nav-item" data-admin-tab="submissionsSection"><span>04</span>投稿审核</button>
-        <button type="button" class="admin-nav-item" data-admin-tab="overview"><span>05</span>管理概览</button>
+        <button type="button" class="admin-nav-item active" data-admin-tab="visitorProfilesSection"><span>01</span>客户信息</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="chatAdminSection"><span>02</span>客服信息</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="aiQaAdminSection"><span>03</span>AI信息</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="submissionsSection"><span>04</span>投稿信息</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="customerDetailsSection"><span>05</span>客户详细</button>
       </nav>
-      <section class="admin-card admin-overview" data-admin-panel="overview">
-        <div class="admin-overview-head"><div><h1>管理总览</h1><p>这里集中查看需要处理的事项。</p></div></div>
-        <div class="analytics-summary admin-stats">
-          <div class="analytics-stat"><span>待审核投稿</span><strong id="statPending">—</strong></div>
-          <div class="analytics-stat"><span>客户聊天会话</span><strong id="statChats">—</strong></div>
-          <div class="analytics-stat"><span>客户档案</span><strong id="statCustomers">—</strong></div>
-          <div class="analytics-stat"><span>未回复会话</span><strong id="statUnread">—</strong></div>
-        </div>
-        <p class="security-note">从上方导航进入对应工作区。客户资料与历史是统一档案，AI 和人工聊天记录会按客户关联展示。</p>
-      </section>
-      <div data-admin-panel="chatAdminSection"><section class="admin-card" id="chatAdminSection">
-        <div class="workspace-heading"><div><span class="admin-eyebrow">CUSTOMER SUPPORT</span><h2>客服对话</h2><p>这里只处理客户与人工客服之间的消息。</p></div></div>
-        <div class="admin-toolbar"><strong id="chatUnreadSummary" role="status">正在检查未回复留言…</strong><button id="refreshChats" class="btn btn-outline" type="button">刷新会话</button><span id="chatAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
-        <div class="chat-admin-layout">
-          <div class="chat-admin-list"><h3>访客会话</h3><div id="chatConversationList" class="chat-conversation-list">正在加载…</div></div>
-          <div class="chat-admin-detail">
-            <h3 id="chatAdminTitle">选择一个会话</h3>
-            <div class="chat-read-tools" aria-label="聊天记录筛选">
-              <input id="chatMessageSearch" type="search" placeholder="搜索本次会话的聊天内容…" aria-label="搜索聊天内容">
-              <select id="chatMessageRole" aria-label="按发送者筛选">
-                <option value="all">全部客服消息</option><option value="visitor">客户消息</option><option value="admin">人工客服回复</option>
-              </select>
-              <span id="chatMessageCount" class="chat-read-count" aria-live="polite">等待加载消息</span>
-            </div>
-            <div id="chatAdminMessages" class="chat-messages chat-admin-messages"><div class="chat-empty">选择左侧访客会话后，这里会显示交流内容。</div></div>
-            <form id="chatAdminReplyForm" class="visitor-chat-form" hidden>
-              <textarea id="chatAdminReply" rows="3" maxlength="1200" placeholder="输入给访客的回复…" required></textarea>
-              <div class="chat-compose-bottom"><small>仅回复非诊疗类内容</small><button id="chatAdminSend" class="btn btn-primary" type="submit">发送回复</button><button id="chatAdminClose" class="btn btn-outline" type="button">结束会话</button></div>
-            </form>
-            <div id="chatCustomerContext" class="security-note" style="margin-top:16px;max-height:340px;overflow:auto">选择客户后显示历史资料。</div>
-          </div>
-        </div>
-      </section></div>
-      <div data-admin-panel="visitorProfilesSection"><section class="admin-card" id="visitorProfilesSection">
-        <div class="workspace-heading"><div><span class="admin-eyebrow">CUSTOMER DIRECTORY</span><h2>客户管理</h2><p>每位客户一份档案。先选择客户，再查看访问记录、AI 对话或人工客服聊天。</p></div><button id="refreshVisitorProfiles" class="btn btn-outline" type="button">刷新客户</button></div>
-        <div class="customer-toolbar"><span class="customer-toolbar-title">全部客户</span><span id="visitorProfilesNotice" class="notice" role="status" aria-live="polite"></span></div>
-        <div class="admin-table-wrap">
-          <table class="admin-table">
-            <thead><tr><th>投稿信息</th><th>内容</th><th>联系方式</th><th>状态</th><th>操作</th></tr></thead>
-            <tbody id="submissionRows"></tbody>
-          </table>
-        </div>
-      </div>
-        
-        <div class="admin-table-wrap">
-          <table class="admin-table">
-            <thead><tr><th>客户 UUID</th><th>客户分类</th><th>访问次数</th><th>首次访问</th><th>最近访问</th><th>操作</th></tr></thead>
+
+      <div data-admin-panel="visitorProfilesSection">
+        <section class="admin-card" id="visitorProfilesSection">
+          <div class="workspace-heading"><div><h2>客户信息</h2><p>一个客户一份统一档案，ID 使用 UUID 前五位显示。</p></div><button id="refreshVisitorProfiles" class="btn btn-outline" type="button">刷新</button></div>
+          <div class="customer-toolbar"><span>客户列表</span><span id="visitorProfilesNotice" class="notice" role="status" aria-live="polite"></span></div>
+          <div class="admin-table-wrap"><table class="admin-table">
+            <thead><tr><th>ID</th><th>分类</th><th>访问次数</th><th>首次访问</th><th>最近访问</th><th>内容</th></tr></thead>
             <tbody id="visitorProfileRows"></tbody>
-          </table>
-        </div>
-        <div id="visitorTimelinePanel" hidden>
-          <h3 id="visitorTimelineTitle">客户详情</h3>
-          <div id="visitorTimeline" class="admin-table-wrap"></div>
-        </div>
-      </section>
-
+          </table></div>
+        </section>
       </div>
 
-<div data-admin-panel="submissionsSection"><section class="admin-card submission-admin-card"><div class="workspace-heading"><div><span class="admin-eyebrow">SUBMISSIONS</span><h2>客户投稿审核</h2><p>集中查看、通过或退回客户投稿。</p></div></div><div class="admin-card submission-admin-card">
-        <h1>客户投稿</h1>
-        <p>集中查看客户投稿并完成审核。</p>
-        <div class="admin-toolbar">
-          <label for="statusFilter">审核状态：</label>
-          <select id="statusFilter">
-            <option value="all">全部</option>
-            <option value="pending" selected>待审核</option>
-            <option value="approved">已通过</option>
-            <option value="rejected">已退回</option>
-          </select>
-          <button id="refreshSubmissions" class="btn btn-outline" type="button">刷新</button>
-          
-        </div>
-        <p id="dashboardMessage" class="notice" role="status" aria-live="polite"></p>
-</section></div>
-            <div data-admin-panel="aiArticlesSection"><section class="admin-card" id="aiArticlesSection">
-        <div class="workspace-heading"><div><span class="admin-eyebrow">CONTENT</span><h2>文章管理</h2></div></div>
-        <p class="security-note">审核 AI 科普文章草稿。保存修改不会公开；点击“发布”后，文章才会出现在对应主题页面。访客只能读取已发布文章。</p>
-        <div class="admin-toolbar"><label for="articleStatusFilter">文章状态：</label><select id="articleStatusFilter"><option value="all">全部</option><option value="draft" selected>草稿</option><option value="published">已发布</option></select><button id="refreshArticles" class="btn btn-outline" type="button">刷新文章</button><span id="articleAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
-        <div id="articleAdminList"></div>
-      </section></div>
+      <div data-admin-panel="chatAdminSection">
+        <section class="admin-card" id="chatAdminSection">
+          <div class="chat-admin-layout">
+            <div class="chat-admin-list"><h3>在线交流</h3><div id="chatConversationList" class="chat-conversation-list">正在加载…</div></div>
+            <div class="chat-admin-detail">
+              <h3 id="chatAdminTitle">选择一个在线交流</h3>
+              <div class="chat-read-tools" aria-label="聊天记录筛选">
+                <input id="chatMessageSearch" type="search" placeholder="搜索聊天内容…" aria-label="搜索聊天内容">
+                <select id="chatMessageRole" aria-label="按发送者筛选"><option value="all">全部消息</option><option value="visitor">客户消息</option><option value="admin">客服回复</option></select>
+                <span id="chatMessageCount" class="chat-read-count" aria-live="polite">等待加载消息</span>
+              </div>
+              <div id="chatAdminMessages" class="chat-messages chat-admin-messages"><div class="chat-empty">选择左侧在线交流后显示聊天内容。</div></div>
+              <form id="chatAdminReplyForm" class="visitor-chat-form" hidden>
+                <textarea id="chatAdminReply" rows="3" maxlength="1200" placeholder="输入给客户的回复…" required></textarea>
+                <div class="chat-compose-bottom"><small>仅回复非诊疗类内容</small><button id="chatAdminSend" class="btn btn-primary" type="submit">发送回复</button><button id="chatAdminClose" class="btn btn-outline" type="button">结束会话</button></div>
+              </form>
+              <div id="chatCustomerContext" class="chat-ai-history"><h3>AI对话内容</h3><p>选择客户后显示该客户的 AI 问答。</p></div>
+              <p id="chatAdminNotice" class="notice" role="status" aria-live="polite"></p>
+              <button id="refreshChats" class="btn btn-outline" type="button">刷新在线交流</button>
+              <span id="chatUnreadSummary" class="notice" role="status"></span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div data-admin-panel="aiQaAdminSection">
+        <section class="admin-card" id="aiQaAdminSection">
+          <div class="workspace-heading"><div><h2>AI信息</h2><p>按客户 ID 汇总每次提问、回答和发生时间。</p></div><button id="refreshAiQa" class="btn btn-outline" type="button">刷新</button></div>
+          <p id="aiQaNotice" class="notice" role="status" aria-live="polite"></p>
+          <div class="admin-table-wrap"><table class="admin-table">
+            <thead><tr><th>ID</th><th>时间</th><th>内容（客户提问 / AI回答）</th><th>操作</th></tr></thead>
+            <tbody id="aiQaRows"></tbody>
+          </table></div>
+        </section>
+      </div>
+
+      <div data-admin-panel="submissionsSection">
+        <section class="admin-card">
+          <div class="workspace-heading"><div><h2>投稿信息</h2><p>AI科普文章在上方管理，客户投稿在下方审核。</p></div></div>
+          <section class="submission-admin-card">
+            <h3>AI科普管理</h3>
+            <p class="security-note">管理 AI 科普文章草稿和已发布文章。</p>
+            <div class="admin-toolbar"><label for="articleStatusFilter">文章状态：</label><select id="articleStatusFilter"><option value="all">全部</option><option value="draft" selected>草稿</option><option value="published">已发布</option></select><button id="refreshArticles" class="btn btn-outline" type="button">刷新文章</button><span id="articleAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
+            <div id="articleAdminList"></div>
+          </section>
+          <section class="submission-admin-card">
+            <h3>客户投稿</h3>
+            <div class="admin-toolbar"><label for="statusFilter">审核状态：</label><select id="statusFilter"><option value="all">全部</option><option value="pending" selected>待审核</option><option value="approved">已通过</option><option value="rejected">已退回</option></select><button id="refreshSubmissions" class="btn btn-outline" type="button">刷新投稿</button></div>
+            <p id="dashboardMessage" class="notice" role="status" aria-live="polite"></p>
+            <div class="admin-table-wrap"><table class="admin-table">
+              <thead><tr><th>投稿信息</th><th>内容</th><th>联系方式</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody id="submissionRows"></tbody>
+            </table></div>
+          </section>
+        </section>
+      </div>
+
+      <div data-admin-panel="customerDetailsSection">
+        <section class="admin-card" id="customerDetailsSection">
+          <div class="workspace-heading"><div><h2>客户详细</h2><p>客户身份、访问来源、客服聊天和 AI 对话统一查看。</p></div></div>
+          <div id="visitorTimelinePanel" hidden><h3 id="visitorTimelineTitle">客户详细</h3><div id="visitorTimeline"></div></div>
+          <p id="customerDetailsEmpty" class="security-note">请先到“客户信息”，点击对应客户的“内容”进入详细档案。</p>
+        </section>
+      </div>
 </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
-  <script src="js/admin.js?v=20261126c"></script>
-  <script src="js/admin-chat-tools.js?v=20261126c"></script>
+  <script src="js/admin.js?v=20261126d"></script>
+  <script src="js/admin-chat-tools.js?v=20261126d"></script>
   <script src="js/admin-articles.js"></script>
 </body>
 </html>
