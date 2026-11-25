@@ -88,6 +88,23 @@
     #chatAdminSection #chatCustomerContext p{margin:7px 0;white-space:pre-wrap;overflow-wrap:anywhere}
     @media(max-width:760px){#chatAdminSection .chat-message{max-width:96%}#chatAdminSection .chat-read-tools{align-items:stretch}#chatAdminSection .chat-read-tools input{min-width:100%}}
 
+
+    /* 简洁后台：统一身份入口、三个独立记录区 */
+    .admin-wrap{max-width:1320px;margin:24px auto;padding:0 18px 56px}
+    .admin-nav{gap:6px;padding:7px;background:#f2f5f1;border:1px solid #e2e9e1}
+    .admin-nav-item{padding:10px 15px;font-size:14px}
+    .admin-card{border-radius:12px;box-shadow:0 3px 16px rgba(35,65,48,.045)}
+    .customer-record-section{margin:14px 0;padding:18px;background:#fff}
+    .customer-record-section h3{margin:0 0 6px;color:#294b3d;font-size:17px}
+    .customer-record-section .security-note{margin-bottom:12px}
+    .customer-record-section .admin-table{min-width:0}
+    .customer-record-section .admin-table td{padding:10px 12px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+    #chatAdminSection .chat-message[data-sender="visitor"]{align-self:flex-end;background:#e8f2eb;color:#244b37}
+    #chatAdminSection .chat-message[data-sender="admin"]{align-self:flex-start;background:#fff4df;color:#684f27;border:1px solid #f0dfbd}
+    #chatAdminSection .chat-message[data-sender="ai"]{display:none!important}
+    #chatAdminSection .chat-read-tools select option[value="ai"]{display:none}
+    @media(max-width:700px){.admin-wrap{padding:0 10px 36px}.admin-nav-item{flex:1 1 auto}.customer-record-section .admin-table td{padding:8px}}
+
   </style>
 </head>
 <body>
@@ -120,9 +137,9 @@
     <section id="dashboard" hidden>
       <nav class="admin-nav" aria-label="管理员功能导航">
         <button type="button" class="admin-nav-item active" data-admin-tab="overview">管理总览</button>
-        <button type="button" class="admin-nav-item" data-admin-tab="chatAdminSection">客户聊天</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="chatAdminSection">人工客服</button>
         
-        <button type="button" class="admin-nav-item" data-admin-tab="visitorProfilesSection">客户资料</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="visitorProfilesSection">客户档案（访问 / AI / 客服）</button>
         <button type="button" class="admin-nav-item" data-admin-tab="aiArticlesSection">科普文章</button>
       </nav>
       <section class="admin-card admin-overview" data-admin-panel="overview">
@@ -146,7 +163,7 @@
             <div class="chat-read-tools" aria-label="聊天记录筛选">
               <input id="chatMessageSearch" type="search" placeholder="搜索本次会话的聊天内容…" aria-label="搜索聊天内容">
               <select id="chatMessageRole" aria-label="按发送者筛选">
-                <option value="all">全部消息</option><option value="visitor">客户消息</option><option value="ai">邻伊 AI 回复</option><option value="admin">人工客服回复</option>
+                <option value="all">全部客服消息</option><option value="visitor">客户消息</option><option value="admin">人工客服回复</option>
               </select>
               <span id="chatMessageCount" class="chat-read-count" aria-live="polite">等待加载消息</span>
             </div>
