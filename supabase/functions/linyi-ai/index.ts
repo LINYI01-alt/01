@@ -166,12 +166,21 @@ Deno.serve(async (req: Request) => {
       const unifiedConversationId = await getOrCreateUnifiedConversation(visitorId);
       const { data: archiveConversation } = await adminClient.from("ai_conversations")
         .select("id,title,created_at,updated_at").eq("visitor_id", visitorId).maybeSingle();
-      const { data: messages, error: messagesError } = await adminClient.from("chat_messages")
+      const { data: legacyLogs, error: logsError } = await adminClient.from("ai_qa_logs")
+        .select("id,conversation_id,question,answer,created_at").eq("visitor_id", visitorId)
+        .order("created_at", { ascending: true }).limit(500);
+      if (logsError) throw new Error("暂时无法读取 AI 历史记录，请稍后重试。");
+      const { data: unifiedMessages, error: messagesError } = await adminClient.from("chat_messages")
         .select("id,sender_role,content,created_at").eq("conversation_id", unifiedConversationId)
         .order("created_at", { ascending: true }).order("id", { ascending: true }).limit(1000);
       if (messagesError) throw new Error("暂时无法读取统一聊天历史，请稍后重试。");
       const conversations = archiveConversation ? [archiveConversation] : [];
-      return json(req, { conversations, messages: messages || [], conversation_id: unifiedConversationId });
+      return json(req, {
+        conversations,
+        messages: legacyLogs || [],
+        unified_messages: unifiedMessages || [],
+        conversation_id: archiveConversation?.id || ""
+      });
     }
     if (action === "chat") {
       const authorization = req.headers.get("Authorization") || "";
@@ -228,7 +237,7 @@ Deno.serve(async (req: Request) => {
       if (logError) console.error("AI QA log insert failed", { code: logError.code, message: logError.message });
       await adminClient.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", aiArchiveConversationId);
       await adminClient.from("chat_conversations").update({ updated_at: new Date().toISOString(), status: "open" }).eq("id", unifiedConversationId);
-      return json(req, { answer, conversation_id: unifiedConversationId });
+      return json(req, { answer, conversation_id: aiArchiveConversationId, unified_conversation_id: unifiedConversationId });
     }
     if (action === "generate_article") {
       const user = await requireAdmin(req);
