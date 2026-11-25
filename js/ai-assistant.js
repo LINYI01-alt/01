@@ -83,7 +83,7 @@
       const isVisitor=item.sender_role==="visitor"||typeof item.question==="string";
       const content=typeof item.content==="string"?item.content:(isVisitor?item.question:item.answer);
       if(!content)return;
-      const displayContent=item.sender_role==="admin"?"【邻伊人工客服】\\n"+content:content;
+      const displayContent=item.sender_role==="admin"?"【邻伊人工客服】\n"+content:content;
       add(displayContent,isVisitor?"user":"bot");
       history.push({role:isVisitor?"user":"assistant",content});
     });
