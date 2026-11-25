@@ -155,6 +155,7 @@
       const { data, error } = await client.from("chat_messages")
         .select("id,sender_role,content,created_at")
         .eq("conversation_id", conversationId)
+        .in("sender_role", ["visitor", "admin"])
         .order("created_at", { ascending: true });
       if (error) throw error;
       messages.replaceChildren();
