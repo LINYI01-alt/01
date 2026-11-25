@@ -344,40 +344,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function loadCustomerContext(visitorId) {
-      const panel = document.getElementById("chatCustomerContext");
-      if (!panel) return;
-      panel.replaceChildren();
-      if (!visitorId) { panel.textContent = "此会话没有关联客户档案。"; return; }
-      const heading = document.createElement("h3"); heading.textContent = "客户历史记录";
-      const intro = document.createElement("p"); intro.textContent = "客户编号：" + visitorId;
-      panel.append(heading, intro);
-      const [profile, ai, pages] = await Promise.all([
-        client.from("visitor_profiles").select("classification,visit_count,first_seen,last_seen").eq("id", visitorId).maybeSingle(),
-        client.from("ai_qa_logs").select("question,answer,created_at").eq("visitor_id", visitorId).order("created_at", { ascending: false }).limit(20),
-        client.from("site_page_views").select("page_path,created_at").eq("visitor_id", visitorId).order("created_at", { ascending: false }).limit(20)
-      ]);
-      if (profile.error || ai.error || pages.error) {
-        const error = document.createElement("p"); error.textContent = "部分客户历史暂时读取失败，请稍后刷新。"; panel.appendChild(error); return;
-      }
-      const summary = document.createElement("p");
-      summary.textContent = profile.data
-        ? "访问次数：" + profile.data.visit_count + " · 首次访问：" + new Date(profile.data.first_seen).toLocaleString("zh-CN") + " · 最近访问：" + new Date(profile.data.last_seen).toLocaleString("zh-CN")
-        : "暂时没有客户档案摘要。";
-      panel.appendChild(summary);
-      const aiTitle = document.createElement("h4"); aiTitle.textContent = "最近 AI 问答（最多 20 条）"; panel.appendChild(aiTitle);
-      (ai.data || []).forEach(item => {
-        const block = document.createElement("p");
-        block.textContent = new Date(item.created_at).toLocaleString("zh-CN") + " · 提问：" + item.question + " · AI 回答：" + item.answer;
-        panel.appendChild(block);
-      });
-      if (!(ai.data || []).length) { const empty = document.createElement("p"); empty.textContent = "暂无 AI 问答记录。"; panel.appendChild(empty); }
-      const pageTitle = document.createElement("h4"); pageTitle.textContent = "最近访问页面（最多 20 条）"; panel.appendChild(pageTitle);
-      (pages.data || []).forEach(item => {
-        const line = document.createElement("p"); line.textContent = new Date(item.created_at).toLocaleString("zh-CN") + " · " + item.page_path; panel.appendChild(line);
-      });
-      if (!(pages.data || []).length) { const empty = document.createElement("p"); empty.textContent = "暂无页面访问记录。"; panel.appendChild(empty); }
+      const panel = document.getElementById("chatCustomerContext"); if (!panel) return; panel.replaceChildren();
+      const heading = document.createElement("h3"); heading.textContent = "当前客户身份"; panel.appendChild(heading);
+      if (!visitorId) { panel.appendChild(document.createTextNode("此会话暂未关联客户档案。")); return; }
+      const idLine = document.createElement("p"); idLine.textContent = "统一客户编号：" + visitorId; panel.appendChild(idLine);
+      const { data, error } = await client.from("visitor_profiles").select("visit_count,first_seen,last_seen").eq("id", visitorId).maybeSingle();
+      if (error) { const p = document.createElement("p"); p.textContent = "客户档案摘要暂时无法读取。"; panel.appendChild(p); return; }
+      if (data) { const p = document.createElement("p"); p.textContent = "访问次数：" + data.visit_count + " · 首次访问：" + new Date(data.first_seen).toLocaleString("zh-CN") + " · 最近访问：" + new Date(data.last_seen).toLocaleString("zh-CN"); panel.appendChild(p); }
+      const note = document.createElement("p"); note.className = "security-note"; note.textContent = "这里只显示客户身份摘要。网站访问记录和 AI 对话请到“客户资料”中分开展示；本聊天窗口只包含客户与人工客服消息。"; panel.appendChild(note);
     }
-
     async function loadChatMessages() {
       if (!activeConversation) return;
       const { data, error } = await client.from("chat_messages")
