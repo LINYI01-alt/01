@@ -109,28 +109,6 @@ async function askOpenAI(messages: Array<{role: string; content: string}>, syste
   return output;
 }
 
-async function getOrCreateUnifiedConversation(visitorId: string) {
-  const { data: existing, error: findError } = await adminClient.from("chat_conversations")
-    .select("id,status").eq("owner_id", visitorId).maybeSingle();
-  if (findError) throw new Error("暂时无法读取统一聊天会话。");
-  if (existing) {
-    if (existing.status !== "open") {
-      const { error: reopenError } = await adminClient.from("chat_conversations")
-        .update({ status: "open", updated_at: new Date().toISOString() }).eq("id", existing.id);
-      if (reopenError) throw new Error("无法恢复原聊天会话。");
-    }
-    return existing.id as string;
-  }
-  const { data: created, error: createError } = await adminClient.from("chat_conversations")
-    .insert({ owner_id: visitorId, subject: "邻伊 AI 统一咨询", status: "open" }).select("id").single();
-  if (!createError && created) return created.id as string;
-  if (createError?.code === "23505") {
-    const { data: raced, error: raceError } = await adminClient.from("chat_conversations")
-      .select("id").eq("owner_id", visitorId).single();
-    if (!raceError && raced) return raced.id as string;
-  }
-  throw new Error("无法建立统一聊天会话，请稍后重试。");
-}
 
 async function getOrCreateAiArchiveConversation(visitorId: string, title: string) {
   const { data: existing, error: findError } = await adminClient.from("ai_conversations")
@@ -163,22 +141,21 @@ Deno.serve(async (req: Request) => {
       const { error: profileError } = await adminClient.from("visitor_profiles")
         .upsert({ id: visitorId }, { onConflict: "id", ignoreDuplicates: true });
       if (profileError) throw new Error("访客档案暂时无法读取，请稍后重试。");
-      const unifiedConversationId = await getOrCreateUnifiedConversation(visitorId);
       const { data: archiveConversation } = await adminClient.from("ai_conversations")
         .select("id,title,created_at,updated_at").eq("visitor_id", visitorId).maybeSingle();
-      const { data: legacyLogs, error: logsError } = await adminClient.from("ai_qa_logs")
+      const { data: aiLogs, error: logsError } = await adminClient.from("ai_qa_logs")
         .select("id,conversation_id,question,answer,created_at").eq("visitor_id", visitorId)
         .order("created_at", { ascending: true }).limit(500);
       if (logsError) throw new Error("暂时无法读取 AI 历史记录，请稍后重试。");
-      const { data: unifiedMessages, error: messagesError } = await adminClient.from("chat_messages")
-        .select("id,sender_role,content,created_at").eq("conversation_id", unifiedConversationId)
-        .order("created_at", { ascending: true }).order("id", { ascending: true }).limit(1000);
-      if (messagesError) throw new Error("暂时无法读取统一聊天历史，请稍后重试。");
       const conversations = archiveConversation ? [archiveConversation] : [];
+      const aiMessages = (aiLogs || []).flatMap((item: any) => [
+        { id: String(item.id) + "-q", sender_role: "visitor", content: item.question, created_at: item.created_at },
+        { id: String(item.id) + "-a", sender_role: "ai", content: item.answer, created_at: new Date(Date.parse(item.created_at) + 1).toISOString() }
+      ]);
       return json(req, {
         conversations,
-        messages: legacyLogs || [],
-        unified_messages: unifiedMessages || [],
+        messages: aiLogs || [],
+        unified_messages: aiMessages,
         conversation_id: archiveConversation?.id || ""
       });
     }
@@ -211,33 +188,25 @@ Deno.serve(async (req: Request) => {
       if (!question || question.length > 2000) return json(req, { error: "请提供有效的问题内容。" }, 400);
       const { error: profileError } = await adminClient.from("visitor_profiles").upsert({ id: visitorId }, { onConflict: "id", ignoreDuplicates: true });
       if (profileError) throw new Error("访客档案暂时无法建立，请稍后重试。");
-      const unifiedConversationId = await getOrCreateUnifiedConversation(visitorId);
       const aiArchiveConversationId = await getOrCreateAiArchiveConversation(visitorId, question);
-      const { data: previous, error: historyError } = await adminClient.from("chat_messages")
-        .select("sender_role,content").eq("conversation_id", unifiedConversationId)
-        .order("created_at", { ascending: true }).order("id", { ascending: true }).limit(24);
-      if (historyError) throw new Error("暂时无法读取统一聊天历史，请稍后重试。");
+      const { data: previous, error: historyError } = await adminClient.from("ai_qa_logs")
+        .select("question,answer").eq("visitor_id", visitorId)
+        .order("created_at", { ascending: true }).limit(12);
+      if (historyError) throw new Error("暂时无法读取 AI 历史记录，请稍后重试。");
       const messages: Array<{ role: "user" | "assistant"; content: string }> = [];
       for (const item of previous || []) {
-        if (item.sender_role === "visitor") messages.push({ role: "user", content: String(item.content).slice(0, 2000) });
-        else if (item.sender_role === "ai" || item.sender_role === "admin") messages.push({ role: "assistant", content: String(item.content).slice(0, 12000) });
+        if (item.question) messages.push({ role: "user", content: String(item.question).slice(0, 2000) });
+        if (item.answer) messages.push({ role: "assistant", content: String(item.answer).slice(0, 12000) });
       }
       messages.push({ role: "user", content: question });
       const inIvfScope = await classifyIvfQuestion(messages);
       const answer = inIvfScope
         ? await askOpenAI(messages, "你是邻伊网站的试管婴儿与辅助生殖科普助手。只能回答试管婴儿、辅助生殖及直接相关的生殖医学问题；如果问题偏离该范围，礼貌拒绝并引导用户咨询 IVF 相关内容。无论访客使用何种语言，始终使用简体中文回答；只有明确要求翻译或英语练习时才提供其他语言。表达温和清楚。不得诊断、开药、制定治疗方案或保证结果；涉及个人检查报告、症状、用药或治疗决策时，建议咨询正规医疗机构专业人员。不要索取姓名、联系方式或身份证信息。")
         : "您好，感谢您的提问！我是邻伊 AI 试管婴儿科普助手，目前仅提供试管婴儿、辅助生殖及相关生殖医学知识科普。您提出的问题超出了我的专业服务范围，暂时无法为您解答。欢迎咨询试管婴儿相关问题。";
-      const messageTime = new Date().toISOString();
-      const { error: sharedMessageError } = await adminClient.from("chat_messages").insert([
-        { conversation_id: unifiedConversationId, sender_id: visitorId, sender_role: "visitor", content: question.slice(0, 12000), created_at: messageTime },
-        { conversation_id: unifiedConversationId, sender_id: visitorId, sender_role: "ai", content: answer.slice(0, 12000), created_at: new Date(Date.parse(messageTime) + 1).toISOString() }
-      ]);
-      if (sharedMessageError) console.error("Unified chat message insert failed", { code: sharedMessageError.code, message: sharedMessageError.message });
       const { error: logError } = await adminClient.from("ai_qa_logs").insert({ visitor_id: visitorId, conversation_id: aiArchiveConversationId, question, answer: answer.slice(0, 12000) });
-      if (logError) console.error("AI QA log insert failed", { code: logError.code, message: logError.message });
+      if (logError) throw new Error("AI 已生成回答，但保存历史记录失败，请稍后重试。");
       await adminClient.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", aiArchiveConversationId);
-      await adminClient.from("chat_conversations").update({ updated_at: new Date().toISOString(), status: "open" }).eq("id", unifiedConversationId);
-      return json(req, { answer, conversation_id: aiArchiveConversationId, unified_conversation_id: unifiedConversationId });
+      return json(req, { answer, conversation_id: aiArchiveConversationId });
     }
     if (action === "generate_article") {
       const user = await requireAdmin(req);
