@@ -103,7 +103,7 @@
           <button type="button" data-message="我想咨询网站内容出处：">资料出处反馈</button>
           <button type="button" data-message="其他留言：">其他问题</button>
         </div>
-        <div id="linyi-chat-messages" aria-live="polite"><div class="linyi-chat-bubble system">您好，欢迎联系邻伊！我是在线接待机器人，会先为您记录留言，管理员看到后将由人工客服继续回复。</div></div>
+        <div id="linyi-chat-messages" aria-live="polite"><div class="linyi-chat-bubble system">您好！欢迎来到邻伊，很高兴为您服务！😊</div></div>
         <div id="linyi-chat-notice" role="status" aria-live="polite">正在连接留言服务…</div>
         <form id="linyi-chat-compose">
           <label for="linyi-chat-input" class="sr-only">输入留言内容</label>
@@ -159,7 +159,7 @@
       if (error) throw error;
       messages.replaceChildren();
       if (!data || !data.length) {
-        addBubble("您好，欢迎联系邻伊！我是在线接待机器人，会先为您记录留言，管理员看到后将由人工客服继续回复。", "system");
+        addBubble("您好！欢迎来到邻伊，很高兴为您服务！😊", "system");
       } else {
         data.forEach(item => addBubble(item.content, item.sender_role === "visitor" ? "visitor" : "admin", new Date(item.created_at).toLocaleString("zh-CN")));
       }
