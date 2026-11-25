@@ -103,7 +103,7 @@
           <button type="button" data-message="我想咨询网站内容出处：">资料出处反馈</button>
           <button type="button" data-message="其他留言：">其他问题</button>
         </div>
-        <div id="linyi-chat-messages" aria-live="polite"><div class="linyi-chat-bubble system">您好！欢迎留言。发送后系统会先确认收到，管理员查看后会在这里回复。请勿发送个人或敏感健康资料。</div></div>
+        <div id="linyi-chat-messages" aria-live="polite"><div class="linyi-chat-bubble system">您好，欢迎联系邻伊！我是在线接待机器人，会先为您记录留言，管理员看到后将由人工客服继续回复。</div></div>
         <div id="linyi-chat-notice" role="status" aria-live="polite">正在连接留言服务…</div>
         <form id="linyi-chat-compose">
           <label for="linyi-chat-input" class="sr-only">输入留言内容</label>
@@ -159,7 +159,7 @@
       if (error) throw error;
       messages.replaceChildren();
       if (!data || !data.length) {
-        addBubble("您好！欢迎留言。发送后系统会先确认收到，管理员查看后会在这里回复。", "system");
+        addBubble("您好，欢迎联系邻伊！我是在线接待机器人，会先为您记录留言，管理员看到后将由人工客服继续回复。", "system");
       } else {
         data.forEach(item => addBubble(item.content, item.sender_role === "visitor" ? "visitor" : "admin", new Date(item.created_at).toLocaleString("zh-CN")));
       }
@@ -312,7 +312,6 @@
         input.value = "";
         count.textContent = "0";
         addBubble(content, "visitor", new Date().toLocaleString("zh-CN"));
-        addBubble("已收到您的留言！系统已自动确认收到，管理员查看后会在这里回复。请使用同一浏览器查看后续消息。", "system");
         setNotice("留言发送成功。");
         loadMessages().catch(error => console.warn("留言已保存，但刷新消息列表失败", error));
       } catch (error) {
