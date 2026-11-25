@@ -306,7 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
         button.className = "chat-conversation-item" + (activeConversation?.id === item.id ? " active" : "");
         const subject = document.createElement("strong"); subject.textContent = (item.subject || "网站内容交流") + ((unreadByConversation.has(item.id) ? "　● 未读" : "") + (pendingByConversation.has(item.id) ? "　待回复" : ""));
         const meta = document.createElement("small");
-        meta.textContent = (item.status === "open" ? "进行中" : "已结束") + " · " + new Date(item.updated_at).toLocaleString("zh-CN");
+        meta.textContent = "客户 UUID：" + String(item.owner_id || "未知").slice(0, 5) + " · " + (item.status === "open" ? "进行中" : "已结束") + " · " + new Date(item.updated_at).toLocaleString("zh-CN");
         button.append(subject, meta);
         button.addEventListener("click", () => selectConversation(item));
         const del = document.createElement("button");
@@ -347,7 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const panel = document.getElementById("chatCustomerContext"); if (!panel) return; panel.replaceChildren();
       const heading = document.createElement("h3"); heading.textContent = "当前客户身份"; panel.appendChild(heading);
       if (!visitorId) { panel.appendChild(document.createTextNode("此会话暂未关联客户档案。")); return; }
-      const idLine = document.createElement("p"); idLine.textContent = "统一客户编号：" + visitorId; panel.appendChild(idLine);
+      const idLine = document.createElement("p"); idLine.textContent = "客户 UUID 前五位：" + String(visitorId).slice(0, 5); panel.appendChild(idLine);
       const { data, error } = await client.from("visitor_profiles").select("visit_count,first_seen,last_seen").eq("id", visitorId).maybeSingle();
       if (error) { const p = document.createElement("p"); p.textContent = "客户档案摘要暂时无法读取。"; panel.appendChild(p); return; }
       if (data) { const p = document.createElement("p"); p.textContent = "访问次数：" + data.visit_count + " · 首次访问：" + new Date(data.first_seen).toLocaleString("zh-CN") + " · 最近访问：" + new Date(data.last_seen).toLocaleString("zh-CN"); panel.appendChild(p); }
