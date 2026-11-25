@@ -92,7 +92,7 @@
   async function loadHistory(){
     status.textContent="正在同步…";
     const data=await api({action:"history"});
-    const logs=data.messages||[];
+    const logs=data.unified_messages||data.messages||[];
     conversationId=data.conversation_id||"";
     try{if(conversationId)localStorage.setItem(key,conversationId);else localStorage.removeItem(key);}catch(_){}
     historyBox.replaceChildren();
