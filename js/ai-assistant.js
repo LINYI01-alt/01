@@ -29,7 +29,7 @@
   document.head.appendChild(style);
   const launcher=document.createElement("button"); launcher.id="linyi-ai-launcher"; launcher.type="button"; launcher.textContent="✦ AI 科普问答";
   const panel=document.createElement("section"); panel.id="linyi-ai-panel"; panel.setAttribute("aria-label","邻伊 AI 科普助手");
-  panel.innerHTML='<div id="linyi-ai-head"><strong>邻伊 AI 科普助手</strong><button type="button" aria-label="关闭">×</button></div><div id="linyi-ai-actions"><button id="linyi-ai-new" type="button">＋ 新建对话</button><button id="linyi-ai-history-toggle" type="button">历史对话</button><span id="linyi-ai-status" style="margin-left:auto;font-size:11px;align-self:center">自动保存</span></div><div id="linyi-ai-history" aria-label="历史对话列表"></div><div id="linyi-ai-messages" aria-live="polite"></div><form id="linyi-ai-form"><input id="linyi-ai-input" maxlength="2000" placeholder="请输入你的问题…" required><button type="submit">发送</button></form><div id="linyi-ai-note">提问额度：每位访客每天最多 50 次、每月最多 500 次；同一网络每 15 分钟最多 20 次。仅限试管婴儿与辅助生殖知识科普；不诊断、不解读个人报告、不提供用药或治疗建议。请勿输入姓名、手机号、身份证号、病历或检查报告。</div>';
+  panel.innerHTML='<div id="linyi-ai-head"><strong>邻伊 AI 科普助手</strong><button type="button" aria-label="关闭">×</button></div><div id="linyi-ai-actions"><button id="linyi-ai-new" type="button">继续原对话</button><button id="linyi-ai-history-toggle" type="button">历史对话</button><span id="linyi-ai-status" style="margin-left:auto;font-size:11px;align-self:center">自动保存</span></div><div id="linyi-ai-history" aria-label="历史对话列表"></div><div id="linyi-ai-messages" aria-live="polite"></div><form id="linyi-ai-form"><input id="linyi-ai-input" maxlength="2000" placeholder="请输入你的问题…" required><button type="submit">发送</button></form><div id="linyi-ai-note">提问额度：每位访客每天最多 50 次、每月最多 500 次；同一网络每 15 分钟最多 20 次。仅限试管婴儿与辅助生殖知识科普；不诊断、不解读个人报告、不提供用药或治疗建议。请勿输入姓名、手机号、身份证号、病历或检查报告。</div>';
   document.body.append(launcher,panel);
   const messages=panel.querySelector("#linyi-ai-messages"), form=panel.querySelector("#linyi-ai-form"), input=panel.querySelector("#linyi-ai-input"), send=form.querySelector("button"), historyBox=panel.querySelector("#linyi-ai-history"), status=panel.querySelector("#linyi-ai-status");
   let identity=null, conversationId="", history=[], historyLoaded=false;
@@ -79,31 +79,33 @@
   function renderConversation(logs){
     history=[];messages.replaceChildren();
     if(!logs.length){greeting();return;}
-    logs.forEach(item=>{add(item.question,"user");add(item.answer,"bot");history.push({role:"user",content:item.question},{role:"assistant",content:item.answer});});
+    logs.forEach(item=>{
+      const isVisitor=item.sender_role==="visitor"||typeof item.question==="string";
+      const content=typeof item.content==="string"?item.content:(isVisitor?item.question:item.answer);
+      if(!content)return;
+      add(content,isVisitor?"user":"bot");
+      history.push({role:isVisitor?"user":"assistant",content});
+    });
     messages.scrollTop=messages.scrollHeight;
   }
   async function loadHistory(){
     status.textContent="正在同步…";
     const data=await api({action:"history"});
-    const conversations=data.conversations||[], logs=data.messages||[];
+    const logs=data.messages||[];
+    conversationId=data.conversation_id||"";
+    try{if(conversationId)localStorage.setItem(key,conversationId);else localStorage.removeItem(key);}catch(_){}
     historyBox.replaceChildren();
-    if(!conversations.length){const empty=document.createElement("div");empty.textContent="还没有历史对话";empty.style.cssText="font-size:12px;color:#78857c;padding:8px";historyBox.appendChild(empty);}
-    conversations.forEach(c=>{
-      const btn=document.createElement("button");btn.type="button";btn.className="linyi-ai-history-item";
-      const related=logs.filter(m=>m.conversation_id===c.id);
-      const first=related[0]?.question||c.title||"AI 科普问答";
-      btn.textContent=first.slice(0,55)+" · "+new Date(c.updated_at).toLocaleString("zh-CN");
-      btn.addEventListener("click",()=>{conversationId=c.id;try{localStorage.setItem(key,conversationId);}catch(_){}renderConversation(related);historyBox.classList.remove("open");status.textContent="已保存";});
-      historyBox.appendChild(btn);
-    });
-    const active=conversations.find(c=>c.id===conversationId);
-    if(active)renderConversation(logs.filter(m=>m.conversation_id===conversationId));
-    else if(!historyLoaded) {conversationId="";try{localStorage.removeItem(key);}catch(_){}greeting();}
+    const btn=document.createElement("button");
+    btn.type="button";btn.className="linyi-ai-history-item";
+    btn.textContent="查看统一聊天记录 · "+logs.length+" 条消息";
+    btn.addEventListener("click",()=>{renderConversation(logs);historyBox.classList.remove("open");status.textContent="已同步完整聊天记录";});
+    historyBox.appendChild(btn);
+    renderConversation(logs);
     historyLoaded=true;status.textContent="自动保存";
   }
   launcher.addEventListener("click",async()=>{panel.classList.toggle("open");if(panel.classList.contains("open")&&!historyLoaded){try{await loadHistory();}catch(e){status.textContent="同步失败";greeting();add(e.message,"bot");}}});
   panel.querySelector("#linyi-ai-head button").addEventListener("click",()=>panel.classList.remove("open"));
-  panel.querySelector("#linyi-ai-new").addEventListener("click",()=>{conversationId="";history=[];try{localStorage.removeItem(key);}catch(_){}greeting();historyBox.classList.remove("open");status.textContent="新对话";input.focus();});
+  panel.querySelector("#linyi-ai-new").addEventListener("click",async()=>{try{await loadHistory();historyBox.classList.remove("open");status.textContent="已恢复唯一聊天会话";input.focus();}catch(e){status.textContent="同步失败";add(e.message,"bot");}});
   panel.querySelector("#linyi-ai-history-toggle").addEventListener("click",()=>historyBox.classList.toggle("open"));
   form.addEventListener("submit",async event=>{
     event.preventDefault();const question=input.value.trim();if(!question)return;
