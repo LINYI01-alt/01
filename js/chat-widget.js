@@ -67,7 +67,7 @@
       .linyi-chat-bubble{max-width:88%;padding:10px 12px;border-radius:14px;font-size:13px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
       .linyi-chat-bubble small{display:block;margin-bottom:4px;color:#9b8a7e;font-size:10px}
       .linyi-chat-bubble.visitor{align-self:flex-end;border-bottom-right-radius:4px;background:#ffeadb;color:#69432e}
-      .linyi-chat-bubble.admin,.linyi-chat-bubble.system{align-self:flex-start;border-bottom-left-radius:4px;background:#f7f3ef;color:#5f5148}
+      .linyi-chat-bubble.admin,.linyi-chat-bubble.ai,.linyi-chat-bubble.system{align-self:flex-start;border-bottom-left-radius:4px;background:#f7f3ef;color:#5f5148}
       #linyi-chat-notice{min-height:18px;padding:5px 14px 0;color:#8a796d;background:#fff;font-size:11px}
       #linyi-chat-notice.error{color:#b33e35}
       #linyi-chat-compose{padding:10px 13px 12px;border-top:1px solid #f1e6de;background:#fffdfb}
@@ -161,7 +161,11 @@
       if (!data || !data.length) {
         addBubble("您好！欢迎来到邻伊，很高兴为您服务！😊", "system");
       } else {
-        data.forEach(item => addBubble(item.content, item.sender_role === "visitor" ? "visitor" : "admin", new Date(item.created_at).toLocaleString("zh-CN")));
+        data.forEach(item => {
+          const role = item.sender_role === "visitor" ? "visitor" : item.sender_role === "ai" ? "ai" : "admin";
+          const label = item.sender_role === "ai" ? "邻伊 AI：" : item.sender_role === "admin" ? "人工客服：" : "";
+          addBubble(label + item.content, role, new Date(item.created_at).toLocaleString("zh-CN"));
+        });
       }
       messages.scrollTop = messages.scrollHeight;
     }
@@ -199,15 +203,25 @@
           const user = identity.user;
           if (!user) throw new Error("暂时无法建立访客会话，请稍后重试。");
           const { data: existing, error: findError } = await client.from("chat_conversations")
-            .select("id,status").eq("owner_id", user.id).eq("status", "open")
-            .order("updated_at", { ascending: false }).limit(1);
+            .select("id,status").eq("owner_id", user.id).maybeSingle();
           if (findError) throw findError;
-          if (existing && existing.length) conversationId = existing[0].id;
-          else {
+          if (existing) {
+            conversationId = existing.id;
+            if (existing.status !== "open") {
+              const { error: reopenError } = await client.from("chat_conversations")
+                .update({ status: "open", updated_at: new Date().toISOString() }).eq("id", conversationId);
+              if (reopenError) throw reopenError;
+            }
+          } else {
             const { data: created, error: createError } = await client.from("chat_conversations")
-              .insert({ owner_id: user.id, subject: "网站在线交流" }).select("id").single();
-            if (createError) throw createError;
-            conversationId = created.id;
+              .insert({ owner_id: user.id, subject: "邻伊 AI 统一咨询" }).select("id").single();
+            if (createError?.code === "23505") {
+              const { data: raced, error: raceError } = await client.from("chat_conversations")
+                .select("id").eq("owner_id", user.id).single();
+              if (raceError || !raced) throw createError;
+              conversationId = raced.id;
+            } else if (createError) throw createError;
+            else conversationId = created.id;
           }
           await loadMessages();
           ready = true;
