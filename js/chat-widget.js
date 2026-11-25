@@ -67,7 +67,7 @@
       .linyi-chat-bubble{max-width:88%;padding:10px 12px;border-radius:14px;font-size:13px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
       .linyi-chat-bubble small{display:block;margin-bottom:4px;color:#9b8a7e;font-size:10px}
       .linyi-chat-bubble.visitor{align-self:flex-end;border-bottom-right-radius:4px;background:#ffeadb;color:#69432e}
-      .linyi-chat-bubble.admin,.linyi-chat-bubble.system{align-self:flex-start;border-bottom-left-radius:4px;background:#f7f3ef;color:#5f5148}
+      .linyi-chat-bubble.admin,.linyi-chat-bubble.ai,.linyi-chat-bubble.system{align-self:flex-start;border-bottom-left-radius:4px;background:#f7f3ef;color:#5f5148}
       #linyi-chat-notice{min-height:18px;padding:5px 14px 0;color:#8a796d;background:#fff;font-size:11px}
       #linyi-chat-notice.error{color:#b33e35}
       #linyi-chat-compose{padding:10px 13px 12px;border-top:1px solid #f1e6de;background:#fffdfb}
