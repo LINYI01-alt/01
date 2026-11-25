@@ -65,6 +65,29 @@
       .analytics-admin-card{padding:12px}
     }
     @media(max-width:480px){#chatAdminSection .chat-conversation-list{grid-template-columns:1fr}}
+
+    /* 客户会话阅读区：明确区分客户、AI 与人工客服 */
+    #chatAdminSection .chat-admin-detail{background:#fff;min-width:0}
+    #chatAdminSection .chat-message{max-width:min(82%,820px);padding:15px 18px;border-radius:13px;box-shadow:0 1px 3px #1b3c3010}
+    #chatAdminSection .chat-message p{font-size:15px;line-height:1.95;margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+    #chatAdminSection .chat-message small{font-size:12px;font-weight:700;display:block;margin-bottom:7px}
+    #chatAdminSection .chat-message[data-sender="visitor"]{align-self:flex-end;background:#e8f2eb;color:#244b37;border-bottom-right-radius:4px}
+    #chatAdminSection .chat-message[data-sender="ai"]{align-self:flex-start;background:#f1f3f0;color:#34483c;border-bottom-left-radius:4px}
+    #chatAdminSection .chat-message[data-sender="admin"]{align-self:flex-start;background:#fff4df;color:#684f27;border:1px solid #f0dfbd;border-bottom-left-radius:4px}
+    #chatAdminSection .chat-message[data-sender="unknown"]{align-self:flex-start}
+    #chatAdminSection .chat-read-tools{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:8px 0 12px;padding:11px;background:#f7f8f4;border:1px solid #e8ece5;border-radius:9px}
+    #chatAdminSection .chat-read-tools input,#chatAdminSection .chat-read-tools select{min-height:38px;padding:7px 10px;border:1px solid #dce3da;border-radius:7px;background:#fff;color:#294638;font:inherit;font-size:13px}
+    #chatAdminSection .chat-read-tools input{flex:1;min-width:180px}
+    #chatAdminSection .chat-read-count{font-size:12px;color:#748278;white-space:nowrap}
+    #chatAdminSection .chat-admin-messages{gap:16px;padding:22px;background:#f8faf7}
+    #chatAdminSection .chat-conversation-item{padding:13px 14px}
+    #chatAdminSection .chat-conversation-item strong{line-height:1.6}
+    #chatAdminSection .chat-conversation-item small{font-size:12px;line-height:1.6}
+    #chatAdminSection #chatCustomerContext{line-height:1.9;background:#f7f8f4;border:1px solid #e7ebe3;border-radius:9px;padding:16px}
+    #chatAdminSection #chatCustomerContext h3,#chatAdminSection #chatCustomerContext h4{color:#294c3a;margin:14px 0 7px}
+    #chatAdminSection #chatCustomerContext p{margin:7px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+    @media(max-width:760px){#chatAdminSection .chat-message{max-width:96%}#chatAdminSection .chat-read-tools{align-items:stretch}#chatAdminSection .chat-read-tools input{min-width:100%}}
+
   </style>
 </head>
 <body>
@@ -120,6 +143,13 @@
           <div class="chat-admin-list"><h3>访客会话</h3><div id="chatConversationList" class="chat-conversation-list">正在加载…</div></div>
           <div class="chat-admin-detail">
             <h3 id="chatAdminTitle">选择一个会话</h3>
+            <div class="chat-read-tools" aria-label="聊天记录筛选">
+              <input id="chatMessageSearch" type="search" placeholder="搜索本次会话的聊天内容…" aria-label="搜索聊天内容">
+              <select id="chatMessageRole" aria-label="按发送者筛选">
+                <option value="all">全部消息</option><option value="visitor">客户消息</option><option value="ai">邻伊 AI 回复</option><option value="admin">人工客服回复</option>
+              </select>
+              <span id="chatMessageCount" class="chat-read-count" aria-live="polite">等待加载消息</span>
+            </div>
             <div id="chatAdminMessages" class="chat-messages chat-admin-messages"><div class="chat-empty">选择左侧访客会话后，这里会显示交流内容。</div></div>
             <form id="chatAdminReplyForm" class="visitor-chat-form" hidden>
               <textarea id="chatAdminReply" rows="3" maxlength="1200" placeholder="输入给访客的回复…" required></textarea>
@@ -188,6 +218,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase-config.js"></script>
   <script src="js/admin.js?v=20261126"></script>
+  <script src="js/admin-chat-tools.js?v=20261126"></script>
   <script src="js/admin-articles.js"></script>
 </body>
 </html>
