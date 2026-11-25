@@ -387,7 +387,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const row = document.createElement("div");
         row.className = "chat-message " + (item.sender_role === "admin" ? "from-visitor" : "from-admin");
         const who = document.createElement("small");
-        who.textContent = (item.sender_role === "admin" ? "邻伊管理员 · " : "访客 · ") + new Date(item.created_at).toLocaleString("zh-CN");
+        const senderLabel = item.sender_role === "admin" ? "邻伊人工客服" : item.sender_role === "ai" ? "邻伊 AI" : "访客";
+        who.textContent = senderLabel + " · " + new Date(item.created_at).toLocaleString("zh-CN");
         const body = document.createElement("p"); body.textContent = item.content;
         row.append(who, body); messages.appendChild(row);
       });
@@ -505,30 +506,27 @@ document.addEventListener("DOMContentLoaded", () => {
     async function loadVisitorTimeline(profile) {
       timelinePanel.hidden = false;
       timelineTitle.textContent = "客户互动时间线 · " + profile.id;
-      timeline.textContent = "正在读取 AI、人工客服和页面访问记录…";
-      const [aiResult, chatResult, pageResult] = await Promise.all([
-        client.from("ai_qa_logs").select("id,question,answer,created_at").eq("visitor_id", profile.id).order("created_at", { ascending: false }).limit(100),
-        client.from("chat_conversations").select("id,subject,status,created_at").eq("owner_id", profile.id).order("created_at", { ascending: false }).limit(100),
+      timeline.textContent = "正在读取统一聊天记录和页面访问记录…";
+      const [chatResult, pageResult] = await Promise.all([
+        client.from("chat_conversations").select("id,subject,status,created_at").eq("owner_id", profile.id).order("created_at", { ascending: false }).limit(10),
         client.from("site_page_views").select("page_path,created_at").eq("visitor_id", profile.id).order("created_at", { ascending: false }).limit(200)
       ]);
-      const errors = [aiResult.error, chatResult.error, pageResult.error].filter(Boolean);
+      const errors = [chatResult.error, pageResult.error].filter(Boolean);
       if (errors.length) { timeline.textContent = "部分记录读取失败：" + errors.map(e => e.message).join("；"); return; }
       const conversations = chatResult.data || [];
-      let humanMessages = [];
+      let unifiedMessages = [];
       if (conversations.length) {
         const messageResult = await client.from("chat_messages")
           .select("conversation_id,sender_role,content,created_at")
           .in("conversation_id", conversations.map(item => item.id))
           .order("created_at", { ascending: false }).limit(300);
-        if (messageResult.error) { timeline.textContent = "人工聊天记录读取失败：" + messageResult.error.message; return; }
-        humanMessages = messageResult.data || [];
+        if (messageResult.error) { timeline.textContent = "统一聊天记录读取失败：" + messageResult.error.message; return; }
+        unifiedMessages = messageResult.data || [];
       }
       const items = [];
-      (aiResult.data || []).forEach(item => {
-        items.push({ at: item.created_at, type: "AI 问答", content: "访客：" + item.question + "\nAI：" + item.answer });
-      });
-      humanMessages.forEach(item => {
-        items.push({ at: item.created_at, type: item.sender_role === "visitor" ? "人工留言 · 客户" : "人工回复 · 管理员", content: item.content });
+      unifiedMessages.forEach(item => {
+        const type = item.sender_role === "visitor" ? "客户消息" : item.sender_role === "ai" ? "AI 回复" : "人工客服回复";
+        items.push({ at: item.created_at, type, content: item.content });
       });
       (pageResult.data || []).forEach(item => items.push({ at: item.created_at, type: "页面访问", content: item.page_path }));
       items.sort((a, b) => new Date(b.at) - new Date(a.at));
