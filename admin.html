@@ -105,6 +105,56 @@
     #chatAdminSection .chat-read-tools select option[value="ai"]{display:none}
     @media(max-width:700px){.admin-wrap{padding:0 10px 36px}.admin-nav-item{flex:1 1 auto}.customer-record-section .admin-table td{padding:8px}}
 
+
+    /* 全新简洁客户管理后台 */
+    body{background:#f4f6f5}
+    .admin-wrap{max-width:1440px;margin:24px auto;padding:0 24px 64px}
+    #dashboard{display:block}
+    .admin-topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:24px 4px 22px}
+    .admin-topbar h1{font-size:28px;line-height:1.2;color:#183d32;margin:4px 0}
+    .admin-topbar p,.workspace-heading p{color:#718078;font-size:14px;margin:5px 0 0}
+    .admin-eyebrow{font-size:10px;font-weight:800;letter-spacing:.16em;color:#8b9a91}
+    .admin-account{display:flex;align-items:center;gap:14px;color:#64736b;font-size:13px}
+    .admin-nav{display:flex;gap:8px;padding:8px;margin:0 0 20px;background:#e9efeb;border:1px solid #e0e8e2;border-radius:14px}
+    .admin-nav-item{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:9px;padding:14px 12px;background:transparent;color:#627269;font-size:15px;font-weight:650;cursor:pointer}
+    .admin-nav-item span{font-size:10px;color:#94a39a;letter-spacing:.08em}
+    .admin-nav-item.active{background:#fff;color:#1d503e;box-shadow:0 2px 9px rgba(25,60,43,.08)}
+    .admin-card{background:#fff;border:1px solid #e8eeea;border-radius:16px;box-shadow:0 5px 24px rgba(27,57,42,.035);padding:24px}
+    .workspace-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+    .workspace-heading h2{font-size:23px;color:#1c4335;margin:5px 0}
+    .customer-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 0 12px}
+    .customer-toolbar-title{font-size:14px;font-weight:700;color:#40574b}
+    #visitorProfilesSection .admin-table-wrap{border:1px solid #e8eeea;border-radius:12px;overflow:auto}
+    #visitorProfilesSection .admin-table{min-width:760px}
+    #visitorProfilesSection .admin-table th{background:#f7faf8;color:#708077;font-weight:650}
+    #visitorProfilesSection .admin-table td{padding:13px 12px;vertical-align:middle}
+    #visitorProfilesSection .admin-table td:first-child{font-family:ui-monospace,monospace;font-size:12px;color:#426252}
+    #visitorProfilesSection .small-button{border-radius:8px;padding:7px 12px;margin-right:5px}
+    #visitorTimelinePanel{margin-top:24px;padding:22px;background:#f8faf8;border:1px solid #e6ede8;border-radius:14px}
+    #visitorTimelineTitle{font-size:18px;color:#204634;margin-bottom:14px;overflow-wrap:anywhere}
+    .customer-detail-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+    .customer-detail-tab{border:1px solid #dfe8e1;background:#fff;color:#52645a;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:650;cursor:pointer}
+    .customer-detail-tab.active{background:#245b43;border-color:#245b43;color:#fff}
+    .customer-detail-pane{background:#fff;border:1px solid #e8eeea;border-radius:11px;padding:12px;overflow:auto}
+    .customer-detail-pane .admin-table{min-width:0}
+    .customer-detail-pane .admin-table td{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.75;padding:12px}
+    #chatAdminSection h2{font-size:23px;color:#1c4335}
+    #chatAdminSection .chat-admin-layout{margin-top:18px}
+    #chatAdminSection .chat-admin-list,#chatAdminSection .chat-admin-detail{border-color:#e6ece8;border-radius:12px}
+    #chatCustomerContext{background:#f6f9f7;padding:12px;border-radius:10px}
+    [data-admin-panel="overview"]{margin-top:20px}
+    .submission-admin-card{margin-top:14px}
+    @media(max-width:760px){
+      .admin-wrap{padding:0 12px 40px;margin:12px auto}
+      .admin-topbar{align-items:flex-start;padding:14px 2px;flex-direction:column}
+      .admin-account{width:100%;justify-content:space-between}
+      .admin-nav{display:grid;grid-template-columns:1fr 1fr}
+      .admin-nav-item{justify-content:flex-start;padding:12px 10px;font-size:13px}
+      .admin-card{padding:15px}
+      .workspace-heading{align-items:flex-start;flex-direction:column}
+      #visitorTimelinePanel{padding:12px}
+    }
+
   </style>
 </head>
 <body>
@@ -135,12 +185,15 @@
     </section>
 
     <section id="dashboard" hidden>
+      <div class="admin-topbar">
+        <div><span class="admin-eyebrow">LINYI · ADMIN</span><h1>邻伊客户管理</h1><p>先找客户，再查看沟通记录。</p></div>
+        <div class="admin-account"><span id="adminUser"></span><button id="logoutButton" class="btn btn-outline" type="button">退出</button></div>
+      </div>
       <nav class="admin-nav" aria-label="管理员功能导航">
-        <button type="button" class="admin-nav-item active" data-admin-tab="overview">管理总览</button>
-        <button type="button" class="admin-nav-item" data-admin-tab="chatAdminSection">人工客服</button>
-        
-        <button type="button" class="admin-nav-item" data-admin-tab="visitorProfilesSection">客户档案（访问 / AI / 客服）</button>
-        <button type="button" class="admin-nav-item" data-admin-tab="aiArticlesSection">科普文章</button>
+        <button type="button" class="admin-nav-item active" data-admin-tab="visitorProfilesSection"><span>01</span>客户管理</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="chatAdminSection"><span>02</span>客服对话</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="aiArticlesSection"><span>03</span>文章管理</button>
+        <button type="button" class="admin-nav-item" data-admin-tab="overview"><span>04</span>管理概览</button>
       </nav>
       <section class="admin-card admin-overview" data-admin-panel="overview">
         <div class="admin-overview-head"><div><h1>管理总览</h1><p>欢迎回来，<strong id="adminUser"></strong>。这里集中查看需要处理的事项。</p></div><button id="logoutButton" class="btn btn-outline" type="button">退出登录</button></div>
@@ -153,8 +206,7 @@
         <p class="security-note">从上方导航进入对应工作区。客户资料与历史是统一档案，AI 和人工聊天记录会按客户关联展示。</p>
       </section>
       <div data-admin-panel="chatAdminSection"><section class="admin-card" id="chatAdminSection">
-        <h2>客户聊天</h2>
-        <p>查看访客留言并以邻伊管理员身份回复。仅处理网站使用、科普内容建议和资料反馈，不进行诊疗咨询。</p>
+        <div class="workspace-heading"><div><span class="admin-eyebrow">CUSTOMER SUPPORT</span><h2>客服对话</h2><p>这里只处理客户与人工客服之间的消息。</p></div></div>
         <div class="admin-toolbar"><strong id="chatUnreadSummary" role="status">正在检查未回复留言…</strong><button id="refreshChats" class="btn btn-outline" type="button">刷新会话</button><span id="chatAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
         <div class="chat-admin-layout">
           <div class="chat-admin-list"><h3>访客会话</h3><div id="chatConversationList" class="chat-conversation-list">正在加载…</div></div>
@@ -177,10 +229,8 @@
         </div>
       </section></div>
       <div data-admin-panel="visitorProfilesSection"><section class="admin-card" id="visitorProfilesSection">
-        <h1>客户资料</h1>
-        <p class="security-note">一个客户一份档案，集中查看客户分类、AI 问答历史、人工聊天和客户投稿记录。</p>
-        
-        <p class="security-note">按 Supabase 匿名用户 UUID 识别同一浏览器访客。标签反映访问频率，不代表已验证的自然人身份。选择客户可查看 AI 问答、人工留言和页面访问时间线；投稿历史在下方统一查看。</p>
+        <div class="workspace-heading"><div><span class="admin-eyebrow">CUSTOMER DIRECTORY</span><h2>客户管理</h2><p>每位客户一份档案。先选择客户，再查看访问记录、AI 对话或人工客服聊天。</p></div><button id="refreshVisitorProfiles" class="btn btn-outline" type="button">刷新客户</button></div>
+        <div class="customer-toolbar"><span class="customer-toolbar-title">全部客户</span><span id="visitorProfilesNotice" class="notice" role="status" aria-live="polite"></span></div>
         <h2>客户投稿</h2>
         <p class="security-note">在这里查看、通过或退回客户投稿，并管理投稿记录。</p>
         <div class="admin-card submission-admin-card">
@@ -205,10 +255,7 @@
           </table>
         </div>
       </div>
-        <div class="admin-toolbar">
-          <button id="refreshVisitorProfiles" class="btn btn-outline" type="button">刷新客户档案</button>
-          <span id="visitorProfilesNotice" class="notice" role="status" aria-live="polite"></span>
-        </div>
+        
         <div class="admin-table-wrap">
           <table class="admin-table">
             <thead><tr><th>客户 UUID</th><th>客户分类</th><th>访问次数</th><th>首次访问</th><th>最近访问</th><th>操作</th></tr></thead>
@@ -216,7 +263,7 @@
           </table>
         </div>
         <div id="visitorTimelinePanel" hidden>
-          <h3 id="visitorTimelineTitle">客户互动时间线</h3>
+          <h3 id="visitorTimelineTitle">客户详情</h3>
           <div id="visitorTimeline" class="admin-table-wrap"></div>
         </div>
       </section>
@@ -224,7 +271,7 @@
       </div>
 
       <div data-admin-panel="aiArticlesSection"><section class="admin-card" id="aiArticlesSection">
-        <h1>科普文章管理</h1>
+        <div class="workspace-heading"><div><span class="admin-eyebrow">CONTENT</span><h2>文章管理</h2></div></div>
         <p class="security-note">审核 AI 科普文章草稿。保存修改不会公开；点击“发布”后，文章才会出现在对应主题页面。访客只能读取已发布文章。</p>
         <div class="admin-toolbar"><label for="articleStatusFilter">文章状态：</label><select id="articleStatusFilter"><option value="all">全部</option><option value="draft" selected>草稿</option><option value="published">已发布</option></select><button id="refreshArticles" class="btn btn-outline" type="button">刷新文章</button><span id="articleAdminNotice" class="notice" role="status" aria-live="polite"></span></div>
         <div id="articleAdminList"></div>
