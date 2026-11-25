@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
   const base = current && current.src ? current.src : new URL("js/main.js", location.href).href;
   const script = document.createElement("script");
   script.id = "linyi-ai-assistant-loader";
-  script.src = new URL("ai-assistant.js", base).href;
+  script.src = new URL("ai-assistant.js?v=20261126", base).href;
   script.defer = true;
   document.head.appendChild(script);
 })();
@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
 (function recordAnonymousPageView() {
   if (/\/admin\.html$/i.test(window.location.pathname)) return;
   const mainScript = document.querySelector('script[src*="js/main.js"]');
-  const helperUrl = new URL("visitor-identity.js", mainScript && mainScript.src ? mainScript.src : window.location.href.replace(/[^/]*$/, "js/main.js")).href;
+  const helperUrl = new URL("visitor-identity.js?v=20261126", mainScript && mainScript.src ? mainScript.src : window.location.href.replace(/[^/]*$/, "js/main.js")).href;
   const existing = Array.from(document.scripts).find(script => script.src === helperUrl);
   const record = () => {
     if (typeof window.linyiRecordPageView === "function") {
