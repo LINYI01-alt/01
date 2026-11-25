@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loginPanel.hidden = true;
     dashboard.hidden = false;
     userLabel.textContent = user?.email || "已登录管理员";
-    activateAdminPanel("overview");
+    activateAdminPanel("visitorProfilesSection");
   };
 
   function activateAdminPanel(panelName) {
