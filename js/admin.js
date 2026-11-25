@@ -254,6 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function refreshUnreadCounts(conversations) {
       const { data, error } = await client.from("chat_messages")
         .select("conversation_id,sender_role,created_at")
+        .in("sender_role", ["visitor", "admin"])
         .order("created_at", { ascending: false }).limit(2000);
       if (error) { chatNotice("未读状态读取失败：" + error.message, "error"); return; }
       const latest = new Map();
@@ -285,15 +286,19 @@ document.addEventListener("DOMContentLoaded", () => {
         .select("id,owner_id,subject,status,created_at,updated_at,admin_last_read_at")
         .order("updated_at", { ascending: false }).limit(100);
       if (error) { chatNotice("会话读取失败：" + error.message, "error"); return; }
-      await refreshUnreadCounts(data);
+      const humanMessages = await client.from("chat_messages").select("conversation_id").in("sender_role", ["visitor", "admin"]).limit(5000);
+      if (humanMessages.error) { chatNotice("人工客服会话读取失败：" + humanMessages.error.message, "error"); return; }
+      const humanIds = new Set((humanMessages.data || []).map(message => message.conversation_id));
+      const humanConversations = (data || []).filter(item => humanIds.has(item.id));
+      await refreshUnreadCounts(humanConversations);
       const chatStat = document.getElementById("statChats");
-      if (chatStat) chatStat.textContent = String((data || []).length);
+      if (chatStat) chatStat.textContent = String(humanConversations.length);
       list.replaceChildren();
-      if (!data || !data.length) {
+      if (!humanConversations.length) {
         const empty = document.createElement("p"); empty.className = "chat-empty";
-        empty.textContent = "目前还没有访客留言。"; list.appendChild(empty); return;
+        empty.textContent = "目前还没有客户与人工客服之间的聊天记录。AI 问答请在客户资料中单独查看。"; list.appendChild(empty); return;
       }
-      data.forEach(item => {
+      humanConversations.forEach(item => {
         const row = document.createElement("div");
         row.className = "chat-conversation-row";
         const button = document.createElement("button");
@@ -378,6 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const { data, error } = await client.from("chat_messages")
         .select("id,sender_role,content,created_at")
         .eq("conversation_id", activeConversation.id)
+        .in("sender_role", ["visitor", "admin"])
         .order("created_at", { ascending: true });
       if (error) { chatNotice("消息读取失败：" + error.message, "error"); return; }
       messages.replaceChildren();
@@ -385,7 +391,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const empty = document.createElement("div"); empty.className = "chat-empty"; empty.textContent = "访客尚未发送消息。"; messages.appendChild(empty);
       } else data.forEach(item => {
         const row = document.createElement("div");
-        row.className = "chat-message " + (item.sender_role === "admin" ? "from-visitor" : "from-admin");
+        row.className = "chat-message " + (item.sender_role === "visitor" ? "from-visitor" : "from-admin");
+        row.dataset.sender = item.sender_role;
         const who = document.createElement("small");
         const senderLabel = item.sender_role === "admin" ? "邻伊人工客服" : item.sender_role === "ai" ? "邻伊 AI" : "访客";
         who.textContent = senderLabel + " · " + new Date(item.created_at).toLocaleString("zh-CN");
@@ -504,50 +511,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function loadVisitorTimeline(profile) {
-      timelinePanel.hidden = false;
-      timelineTitle.textContent = "客户互动时间线 · " + profile.id;
-      timeline.textContent = "正在读取统一聊天记录和页面访问记录…";
-      const [chatResult, pageResult] = await Promise.all([
-        client.from("chat_conversations").select("id,subject,status,created_at").eq("owner_id", profile.id).order("created_at", { ascending: false }).limit(10),
-        client.from("site_page_views").select("page_path,created_at").eq("visitor_id", profile.id).order("created_at", { ascending: false }).limit(200)
+      timelinePanel.hidden = false; timelineTitle.textContent = "客户档案 · " + profile.id; timeline.replaceChildren();
+      const intro = document.createElement("p"); intro.className = "security-note"; intro.textContent = "统一客户编号（Supabase 用户 ID）：" + profile.id + "。以下三类记录分别展示，互不混在一起。"; timeline.appendChild(intro);
+      const results = await Promise.all([
+        client.from("visitor_profiles").select("classification,visit_count,first_seen,last_seen").eq("id", profile.id).maybeSingle(),
+        client.from("ai_qa_logs").select("question,answer,created_at").eq("visitor_id", profile.id).order("created_at", { ascending: false }).limit(500),
+        client.from("site_page_views").select("page_path,created_at").eq("visitor_id", profile.id).order("created_at", { ascending: false }).limit(500),
+        client.from("chat_conversations").select("id,subject,status").eq("owner_id", profile.id).limit(20)
       ]);
-      const errors = [chatResult.error, pageResult.error].filter(Boolean);
-      if (errors.length) { timeline.textContent = "部分记录读取失败：" + errors.map(e => e.message).join("；"); return; }
-      const conversations = chatResult.data || [];
-      let unifiedMessages = [];
+      const [profileResult, aiResult, pageResult, conversationResult] = results;
+      const errors = results.map(item => item.error).filter(Boolean);
+      if (errors.length) { const p = document.createElement("p"); p.textContent = "部分记录读取失败：" + errors.map(item => item.message).join("；"); timeline.appendChild(p); }
+      const summary = document.createElement("p"); summary.textContent = profileResult.data ? "访问次数：" + profileResult.data.visit_count + " · 首次访问：" + dateText(profileResult.data.first_seen) + " · 最近访问：" + dateText(profileResult.data.last_seen) : "客户档案摘要暂不可用。"; timeline.appendChild(summary);
+      function section(titleText, description, items, render, emptyText) {
+        const box = document.createElement("section"); box.className = "admin-card customer-record-section";
+        const h = document.createElement("h3"); h.textContent = titleText; const note = document.createElement("p"); note.className = "security-note"; note.textContent = description;
+        const table = document.createElement("table"); table.className = "admin-table"; const body = document.createElement("tbody");
+        if (!items.length) { const tr = document.createElement("tr"); const td = document.createElement("td"); td.colSpan = 2; td.textContent = emptyText; tr.appendChild(td); body.appendChild(tr); }
+        else items.forEach(item => { const tr = document.createElement("tr"); const time = document.createElement("td"); time.textContent = dateText(item.created_at); time.style.width = "190px"; const content = document.createElement("td"); content.textContent = render(item); tr.append(time, content); body.appendChild(tr); });
+        table.appendChild(body); box.append(h, note, table); timeline.appendChild(box);
+      }
+      section("① 网站访问记录", "只显示客户访问的页面和时间，不包含聊天内容。", pageResult.data || [], item => item.page_path, "暂无访问记录。");
+      section("② 邻伊 AI 对话", "只显示客户与 AI 的问答，不进入人工客服聊天窗口。", aiResult.data || [], item => "客户提问：" + (item.question || "") + "\n\n邻伊 AI：" + (item.answer || ""), "暂无 AI 对话记录。");
+      const conversations = conversationResult.data || []; let humanRows = [];
       if (conversations.length) {
-        const messageResult = await client.from("chat_messages")
-          .select("conversation_id,sender_role,content,created_at")
-          .in("conversation_id", conversations.map(item => item.id))
-          .order("created_at", { ascending: false }).limit(300);
-        if (messageResult.error) { timeline.textContent = "统一聊天记录读取失败：" + messageResult.error.message; return; }
-        unifiedMessages = messageResult.data || [];
+        const result = await client.from("chat_messages").select("conversation_id,sender_role,content,created_at").in("conversation_id", conversations.map(item => item.id)).in("sender_role", ["visitor", "admin"]).order("created_at", { ascending: false }).limit(1000);
+        if (result.error) { const p = document.createElement("p"); p.textContent = "人工客服记录读取失败：" + result.error.message; timeline.appendChild(p); }
+        else humanRows = (result.data || []).map(item => ({ created_at: item.created_at, content: (item.sender_role === "visitor" ? "客户：" : "人工客服：") + item.content }));
       }
-      const items = [];
-      unifiedMessages.forEach(item => {
-        const type = item.sender_role === "visitor" ? "客户消息" : item.sender_role === "ai" ? "AI 回复" : "人工客服回复";
-        items.push({ at: item.created_at, type, content: item.content });
-      });
-      (pageResult.data || []).forEach(item => items.push({ at: item.created_at, type: "页面访问", content: item.page_path }));
-      items.sort((a, b) => new Date(b.at) - new Date(a.at));
-      const table = document.createElement("table"); table.className = "admin-table";
-      const head = document.createElement("thead"); const headRow = document.createElement("tr");
-      ["时间", "类型", "内容"].forEach(value => { const th = document.createElement("th"); th.textContent = value; headRow.appendChild(th); });
-      head.appendChild(headRow); table.appendChild(head);
-      const body = document.createElement("tbody");
-      items.forEach(item => {
-        const tr = document.createElement("tr");
-        for (const value of [dateText(item.at), item.type, item.content]) {
-          const td = document.createElement("td"); td.className = "content-cell"; td.textContent = value; tr.appendChild(td);
-        }
-        body.appendChild(tr);
-      });
-      if (!items.length) {
-        const tr = document.createElement("tr"); const td = document.createElement("td");
-        td.colSpan = 3; td.textContent = "该客户暂时没有已关联的 AI、人工客服或页面访问记录。";
-        tr.appendChild(td); body.appendChild(tr);
-      }
-      table.appendChild(body); timeline.replaceChildren(table);
+      section("③ 人工客服聊天", "这里只显示客户与人工客服的双向消息；AI 对话不会出现在这里。", humanRows, item => item.content, "暂无客户与人工客服的聊天记录。");
     }
 
     document.getElementById("refreshVisitorProfiles").addEventListener("click", loadVisitorProfiles);
