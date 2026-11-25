@@ -210,22 +210,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (error) { setAiQaNotice("读取失败：" + error.message, "error"); return; }
       if (!data || !data.length) {
         const tr = document.createElement("tr");
-        const td = document.createElement("td"); td.colSpan = 4; td.textContent = "暂时没有 AI 问答记录。";
+        const td = document.createElement("td"); td.colSpan = 3; td.textContent = "暂时没有 AI 问答记录。";
         tr.appendChild(td); aiQaRows.appendChild(tr);
       } else data.forEach(item => {
         const tr = document.createElement("tr");
         for (const value of [String(item.visitor_id || "").slice(0, 5), new Date(item.created_at).toLocaleString("zh-CN"), "客户提问：\n" + (item.question || "") + "\n\n邻伊 AI 回答：\n" + (item.answer || "")]) {
           const td = document.createElement("td"); td.className = "content-cell"; td.textContent = value || ""; tr.appendChild(td);
         }
-        const action = document.createElement("td");
-        const del = document.createElement("button"); del.type = "button"; del.className = "small-button delete"; del.textContent = "删除";
-        del.addEventListener("click", async () => {
-          if (!confirm("确定删除这条 AI 问答记录？")) return;
-          const { error: deleteError } = await client.from("ai_qa_logs").delete().eq("id", item.id);
-          if (deleteError) { setAiQaNotice("删除失败：" + deleteError.message, "error"); return; }
-          await loadAiQaLogs();
-        });
-        action.appendChild(del); tr.appendChild(action); aiQaRows.appendChild(tr);
+        aiQaRows.appendChild(tr);
       });
       setAiQaNotice("已读取 " + data.length + " 条记录（最多显示最近 500 条）。", "success");
     }
@@ -501,7 +493,7 @@ document.addEventListener("DOMContentLoaded", () => {
       summaryItems.forEach(([label, value]) => { const item = document.createElement("div"); const small = document.createElement("small"); small.textContent = label; const strong = document.createElement("strong"); strong.textContent = value; item.append(small, strong); summary.appendChild(item); });
       timeline.appendChild(summary);
       const sourceSection = document.createElement("section"); sourceSection.className = "customer-detail-section";
-      const sourceTitle = document.createElement("h4"); sourceTitle.textContent = "访问形式"; sourceSection.appendChild(sourceTitle);
+      const sourceTitle = document.createElement("h4"); sourceTitle.textContent = "访问形式（当前记录为访问页面）"; sourceSection.appendChild(sourceTitle);
       const paths = pageResult.data || [];
       if (!paths.length) { const note = document.createElement("p"); note.textContent = "暂无访问来源记录。"; sourceSection.appendChild(note); }
       else paths.forEach(item => { const line = document.createElement("div"); line.className = "customer-content-item"; const time = document.createElement("small"); time.className = "customer-content-time"; time.textContent = dateText(item.created_at); const value = document.createElement("div"); value.textContent = "网站访问 · " + (item.page_path || "页面路径未记录"); line.append(time, value); sourceSection.appendChild(line); });
