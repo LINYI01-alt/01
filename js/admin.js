@@ -487,7 +487,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     async function loadVisitorTimeline(profile) {
       timelinePanel.hidden = false; timelineTitle.textContent = "客户档案 · " + profile.id; timeline.replaceChildren();
-      const intro = document.createElement("p"); intro.className = "security-note"; intro.textContent = "统一客户编号（Supabase 用户 ID）：" + profile.id + "。以下三类记录分别展示，互不混在一起。"; timeline.appendChild(intro);
+      const intro = document.createElement("p"); intro.className = "security-note"; intro.textContent = "统一客户编号（Supabase 用户 ID）：" + profile.id + "。身份统一，记录分开查看。"; timeline.appendChild(intro);
       const results = await Promise.all([
         client.from("visitor_profiles").select("classification,visit_count,first_seen,last_seen").eq("id", profile.id).maybeSingle(),
         client.from("ai_qa_logs").select("question,answer,created_at").eq("visitor_id", profile.id).order("created_at", { ascending: false }).limit(500),
@@ -497,26 +497,34 @@ document.addEventListener("DOMContentLoaded", () => {
       const [profileResult, aiResult, pageResult, conversationResult] = results;
       const errors = results.map(item => item.error).filter(Boolean);
       if (errors.length) { const p = document.createElement("p"); p.textContent = "部分记录读取失败：" + errors.map(item => item.message).join("；"); timeline.appendChild(p); }
-      const summary = document.createElement("p"); summary.textContent = profileResult.data ? "访问次数：" + profileResult.data.visit_count + " · 首次访问：" + dateText(profileResult.data.first_seen) + " · 最近访问：" + dateText(profileResult.data.last_seen) : "客户档案摘要暂不可用。"; timeline.appendChild(summary);
-      function section(titleText, description, items, render, emptyText) {
-        const box = document.createElement("section"); box.className = "admin-card customer-record-section";
-        const h = document.createElement("h3"); h.textContent = titleText; const note = document.createElement("p"); note.className = "security-note"; note.textContent = description;
-        const table = document.createElement("table"); table.className = "admin-table"; const body = document.createElement("tbody");
-        if (!items.length) { const tr = document.createElement("tr"); const td = document.createElement("td"); td.colSpan = 2; td.textContent = emptyText; tr.appendChild(td); body.appendChild(tr); }
-        else items.forEach(item => { const tr = document.createElement("tr"); const time = document.createElement("td"); time.textContent = dateText(item.created_at); time.style.width = "190px"; const content = document.createElement("td"); content.textContent = render(item); tr.append(time, content); body.appendChild(tr); });
-        table.appendChild(body); box.append(h, note, table); timeline.appendChild(box);
-      }
-      section("① 网站访问记录", "只显示客户访问的页面和时间，不包含聊天内容。", pageResult.data || [], item => item.page_path, "暂无访问记录。");
-      section("② 邻伊 AI 对话", "只显示客户与 AI 的问答，不进入人工客服聊天窗口。", aiResult.data || [], item => "客户提问：" + (item.question || "") + "\n\n邻伊 AI：" + (item.answer || ""), "暂无 AI 对话记录。");
+      const summary = document.createElement("div"); summary.className = "customer-summary-strip";
+      summary.textContent = profileResult.data ? "访问 " + profileResult.data.visit_count + " 次　·　首次 " + dateText(profileResult.data.first_seen) + "　·　最近 " + dateText(profileResult.data.last_seen) : "客户档案摘要暂不可用。"; timeline.appendChild(summary);
+      const tabs = document.createElement("div"); tabs.className = "customer-detail-tabs";
+      const panes = document.createElement("div"); panes.className = "customer-detail-panes";
+      const makePane = (key, label, description, items, render, emptyText) => {
+        const button = document.createElement("button"); button.type = "button"; button.className = "customer-detail-tab"; button.textContent = label + "（" + items.length + "）";
+        const pane = document.createElement("section"); pane.className = "customer-detail-pane"; pane.hidden = true;
+        const note = document.createElement("p"); note.className = "security-note"; note.textContent = description; pane.appendChild(note);
+        if (!items.length) { const empty = document.createElement("p"); empty.className = "chat-empty"; empty.textContent = emptyText; pane.appendChild(empty); }
+        else {
+          const table = document.createElement("table"); table.className = "admin-table"; const body = document.createElement("tbody");
+          items.forEach(item => { const row = document.createElement("tr"); const time = document.createElement("td"); time.textContent = dateText(item.created_at); time.style.width = "185px"; const content = document.createElement("td"); content.textContent = render(item); row.append(time, content); body.appendChild(row); });
+          table.appendChild(body); pane.appendChild(table);
+        }
+        button.addEventListener("click", () => { tabs.querySelectorAll("button").forEach(x => x.classList.remove("active")); panes.querySelectorAll("section").forEach(x => x.hidden = true); button.classList.add("active"); pane.hidden = false; });
+        tabs.appendChild(button); panes.appendChild(pane); return button;
+      };
+      makePane("visits", "访问记录", "客户访问过的网站页面和时间。", pageResult.data || [], item => item.page_path, "这位客户还没有网站访问记录。");
+      makePane("ai", "AI 对话", "点击客户的每条提问记录，即可阅读当时邻伊 AI 的完整回答。", aiResult.data || [], item => "客户提问：\n" + (item.question || "") + "\n\n邻伊 AI 回复：\n" + (item.answer || ""), "这位客户还没有 AI 对话记录。");
       const conversations = conversationResult.data || []; let humanRows = [];
       if (conversations.length) {
         const result = await client.from("chat_messages").select("conversation_id,sender_role,content,created_at").in("conversation_id", conversations.map(item => item.id)).in("sender_role", ["visitor", "admin"]).order("created_at", { ascending: false }).limit(1000);
         if (result.error) { const p = document.createElement("p"); p.textContent = "人工客服记录读取失败：" + result.error.message; timeline.appendChild(p); }
-        else humanRows = (result.data || []).map(item => ({ created_at: item.created_at, content: (item.sender_role === "visitor" ? "客户：" : "人工客服：") + item.content }));
+        else humanRows = (result.data || []).map(item => ({ created_at: item.created_at, content: (item.sender_role === "visitor" ? "客户：" : "客服：") + item.content }));
       }
-      section("③ 人工客服聊天", "这里只显示客户与人工客服的双向消息；AI 对话不会出现在这里。", humanRows, item => item.content, "暂无客户与人工客服的聊天记录。");
+      makePane("support", "客服聊天", "仅显示客户与人工客服的双向消息，与 AI 对话完全分开。", humanRows, item => item.content, "这位客户还没有人工客服聊天记录。");
+      const firstTab = tabs.querySelector("button"); if (firstTab) firstTab.click();
     }
-
     document.getElementById("refreshVisitorProfiles").addEventListener("click", loadVisitorProfiles);
     window.loadLinyiVisitorProfiles = loadVisitorProfiles;
   }
