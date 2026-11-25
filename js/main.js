@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if (document.getElementById("linyi-chat-widget-loader")) return;
   const script = document.createElement("script");
   script.id = "linyi-chat-widget-loader";
-  script.src = new URL("chat-widget.js", document.currentScript && document.currentScript.src
+  script.src = new URL("chat-widget.js?v=20261126", document.currentScript && document.currentScript.src
     ? document.currentScript.src
     : window.location.href.replace(/[^/]*$/, "js/main.js")).href;
   script.defer = true;
